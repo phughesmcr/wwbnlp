@@ -10,20 +10,15 @@ earlier npm modules around one inspectable scoring engine.
 
 ## Get started
 
-The package is prepared as `wwbnlp@0.1.0`; **an npm release has not yet been
-published**. Build from this repository for now:
+Install [wwbnlp](https://www.npmjs.com/package/wwbnlp) from npm:
 
 ```sh
-git clone https://github.com/phughesmcr/wwbnlp.git
-cd wwbnlp
-npm ci
-npm test
-npm pack
+npm install wwbnlp
 ```
 
-Install the generated `wwbnlp-0.1.0.tgz` in your project. Requires Node.js 22.12
-or later. ESM and native `require()` on supported Node versions use the same
-module.
+Requires Node.js 22.12 or later. ESM and native `require()` on supported Node
+versions use the same module. The package is maintained by
+[phughesmcr](https://www.npmjs.com/~phughesmcr).
 
 ```js
 import { analyse } from "wwbnlp";

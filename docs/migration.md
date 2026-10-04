@@ -2,12 +2,12 @@
 
 The existing npm releases remain available. Archiving GitHub repositories does
 not unpublish npm versions, and this consolidation does not replace existing
-dependencies automatically. The npm account is
+dependencies automatically. The legacy npm account is
 [phughes](https://www.npmjs.com/~phughes).
 
-The new package is prepared as `wwbnlp@0.1.0`. Until it is published, install
-the tarball built by `npm pack` rather than assuming `npm install wwbnlp` is
-available.
+The new [wwbnlp](https://www.npmjs.com/package/wwbnlp) package is maintained by
+[phughesmcr](https://www.npmjs.com/~phughesmcr). Install it with
+`npm install wwbnlp` and migrate explicitly using the model IDs below.
 
 ## Imports and model IDs
 
@@ -115,9 +115,9 @@ intercept map and never filled it.
 ## Maintainer release sequence
 
 1. Run tests, source verification and package inspection; review the tarball.
-2. Publish `wwbnlp` from the `phughes` npm account, after authentication and any
-   npm-required account confirmation.
-3. Verify the installed registry package, then update this repository’s install
+2. Publish `wwbnlp` from the `phughesmcr` npm account, after authentication and
+   any npm-required account confirmation.
+3. Verify the installed registry package and its bundled installation
    instructions.
 4. If retiring the old npm names, add a deprecation message linking to this
    guide. Deprecation is a separate registry change; it has not been applied by
