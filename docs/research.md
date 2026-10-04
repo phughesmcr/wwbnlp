@@ -15,7 +15,7 @@ cross-validation results.
 | English PERMA        | Schwartz et al. (2016), [Predicting Individual Well-Being Through the Language of Social Media](https://psb.stanford.edu/psb-online/proceedings/psb16/schwartz.pdf) | WWBP `perma/permaV3_dd.csv`                                                |
 | Spanish PERMA        | Smith et al. (2016), [Does ‘well-being’ translate on Twitter?](https://aclanthology.org/D16-1217/)                                                                  | WWBP `spanish_perma/spanish_perma_v1.csv`                                  |
 | Big Five             | Schwartz et al. (2013), [Personality, Gender, and Age in the Language of Social Media: The Open-Vocabulary Approach](https://doi.org/10.1371/journal.pone.0073791)  | Historical `phughesmcr/bigfive/data/lexicon.json`                          |
-| Dark Triad           | Preoţiuc-Pietro, Carpenter, Giorgi and Ungar (2016), [Studying the Dark Triad of Personality using Twitter Behavior](https://doi.org/10.1145/2983323.2983827)       | Historical `phughesmcr/darktriad/data/lexicon.json`                        |
+| Dark Triad           | Preoţiuc-Pietro, Carpenter, Giorgi and Ungar (2016), [Studying the Dark Triad of Personality through Twitter Behavior](https://doi.org/10.1145/2983323.2983822)     | Historical `phughesmcr/darktriad/data/lexicon.json`                        |
 | Optimism             | Experimental combination from the historical optimismo package, using affect and future-term vocabularies                                                           | Historical future-term allowlist intersected with canonical affect weights |
 
 The canonical CSVs are from [wwbp/lexica](https://github.com/wwbp/lexica). Its
