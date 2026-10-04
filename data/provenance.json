@@ -1,0 +1,67 @@
+{
+  "imported": "2026-10-04",
+  "sources": [
+    {
+      "repository": "wwbp/lexica",
+      "commit": "abaff9a1ae90757cfe77770fafbfcd16c92cd992",
+      "path": "affect_intensity/affect_intensity_lexicon.csv",
+      "sha256": "e8fd205f5d11ef6b51d6f5c88bf3998b35416e7e4d3f71b38c01820496b1c5cd"
+    },
+    {
+      "repository": "wwbp/lexica",
+      "commit": "abaff9a1ae90757cfe77770fafbfcd16c92cd992",
+      "path": "age_gender/emnlp14age.csv",
+      "sha256": "e7ea6de87b1d73a0e8e7615d27fdbfe25322949d2dfe66ea0b400c193b06ce1b"
+    },
+    {
+      "repository": "wwbp/lexica",
+      "commit": "abaff9a1ae90757cfe77770fafbfcd16c92cd992",
+      "path": "age_gender/emnlp14gender.csv",
+      "sha256": "2ed49285defa8c9c5b16f8443cbe134985b412071b7fdf8e4cc35d15294fcdab"
+    },
+    {
+      "repository": "wwbp/lexica",
+      "commit": "abaff9a1ae90757cfe77770fafbfcd16c92cd992",
+      "path": "temporal_orientation/temporal_orientation_lexicon.csv",
+      "sha256": "eba7978e9918ee1508ff64024ab10252e3cce1240238d373b226a55e9a504bc1"
+    },
+    {
+      "repository": "wwbp/lexica",
+      "commit": "abaff9a1ae90757cfe77770fafbfcd16c92cd992",
+      "path": "perma/permaV3_dd.csv",
+      "sha256": "6d954bbcf19d3690060b593b126930b0c580c0b5d45ef1ea95c0c544dece7079"
+    },
+    {
+      "repository": "wwbp/lexica",
+      "commit": "abaff9a1ae90757cfe77770fafbfcd16c92cd992",
+      "path": "spanish_perma/spanish_perma_v1.csv",
+      "sha256": "f57f3045fa641e25edca4ba2daee21c2ca140c7428110bde870ab737a9a19bae"
+    },
+    {
+      "repository": "phughesmcr/bigfive",
+      "commit": "6d928f158e6ad7977d43340d60513421b6a90863",
+      "path": "data/lexicon.json",
+      "sha256": "73206a96dd40fa877d42b00ac6237401fe802ee86b3a6bc1b1a3d2da67ee3ca3"
+    },
+    {
+      "repository": "phughesmcr/darktriad",
+      "commit": "f3d71c3b883489b3cccfd9e6263713032e68be49",
+      "path": "data/lexicon.json",
+      "sha256": "e55bd316f7d4f97d048c890ee15bf58d9bf29601e693d040e513a2271138d8b1"
+    },
+    {
+      "repository": "phughesmcr/optimismo",
+      "commit": "229a71b92ec692863430a3c83aa0725d10edfd2b",
+      "path": "data/future.json",
+      "sha256": "232099a4332a8274062947d363ca0be6147cd74d2c4c09f3ae6073be8f7166c5"
+    }
+  ],
+  "transformations": [
+    "CSV category labels mapped to historical public names; intercept and named structural features separated from lexical terms.",
+    "Spanish PERMA restored from original UTF-8 WWBP CSV rather than corrupted legacy JSON.",
+    "Optimism is the intersection of historical future-term allowlist and canonical affect weights; an experimental composition, not a separately trained model.",
+    "Big Five and Dark Triad retain historical repository weights.",
+    "An empty-string term with weight 0.078492 in the historical Big Five O category is excluded: it cannot represent a token.",
+    "Default ngram sizes are derived from the actual vocabulary, including age/gender phrases omitted by the historical wrappers."
+  ]
+}

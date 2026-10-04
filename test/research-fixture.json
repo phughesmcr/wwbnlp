@@ -1,0 +1,76 @@
+{
+  "description": "Independent Python calculation of intercept plus lexical contributions for explicit tokens; structural covariates omitted. Coefficients are pinned in data/provenance.json.",
+  "tokens": [
+    "happy",
+    "happy",
+    "love",
+    "!",
+    "future",
+    "today",
+    "depressed",
+    "birthday",
+    ":)",
+    "d\u00eda",
+    "de",
+    "familia",
+    "trabajo",
+    "amor"
+  ],
+  "expected": {
+    "affect": {
+      "AFFECT": 5.2923277743954005,
+      "INTENSITY": 2.619104479083821
+    },
+    "age": {
+      "AGE": 30.623018687654287
+    },
+    "gender": {
+      "GENDER": 13.548901349662286
+    },
+    "temporal": {
+      "PRESENT": 0.26771309507865,
+      "FUTURE": -0.58474957842485,
+      "PAST": -0.6610687065572936
+    },
+    "perma": {
+      "NEG_E": -0.048734994221428574,
+      "NEG_A": -0.04511553082142857,
+      "POS_R": 0.2211948309,
+      "POS_P": 0.26473013999285716,
+      "NEG_M": -0.04915563751428571,
+      "NEG_R": -0.039897483985714285,
+      "NEG_P": -0.10173215971428572,
+      "POS_M": 0.05756606532857143,
+      "POS_A": 0.056237142835714286,
+      "POS_E": 0.04852273339285714
+    },
+    "permaEs": {
+      "NEG_P": 2.48596430299705,
+      "POS_P": 2.804534081433222,
+      "POS_A": 3.439272911016643,
+      "NEG_A": 2.4459660107391428,
+      "NEG_E": 1.6684860055375927,
+      "POS_E": 2.152657974062636,
+      "POS_M": 1.7697923393040023,
+      "NEG_M": 1.5337120917069014,
+      "NEG_R": 1.7682048998375144,
+      "POS_R": 2.1019834771877774
+    },
+    "bigFive": {
+      "N": -0.0345,
+      "A": 0.079537,
+      "E": 0.068387,
+      "C": null,
+      "O": -0.044009
+    },
+    "darkTriad": {
+      "darktriad": 0.6301705365938386,
+      "machiavellianism": 0.5951825717479079,
+      "narcissism": 0.7106321462077486,
+      "psychopathy": 0.48625208130901426
+    },
+    "optimism": {
+      "OPTIMISM": 7.725478905532
+    }
+  }
+}

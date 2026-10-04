@@ -1,0 +1,60 @@
+{
+  "name": "wwbnlp",
+  "version": "0.1.0",
+  "description": "World Wellbeing NLP: reproducible weighted-lexicon research tools.",
+  "type": "module",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    },
+    "./core": {
+      "types": "./dist/src/core.d.ts",
+      "default": "./dist/src/core.js"
+    },
+    "./provenance": "./data/provenance.json"
+  },
+  "files": [
+    "dist",
+    "data/provenance.json",
+    "docs",
+    "licenses",
+    "LICENSE",
+    "NOTICE.md"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "check": "tsc --noEmit && deno lint src scripts test && deno fmt --check src scripts test docs README.md NOTICE.md package.json tsconfig.json",
+    "prepack": "npm run build",
+    "smoke:package": "npm run build && node scripts/smoke-package.mjs"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2"
+  },
+  "license": "CC-BY-NC-SA-3.0",
+  "author": "Peter Hughes (https://www.phugh.es)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/phughesmcr/wwbnlp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/phughesmcr/wwbnlp/issues"
+  },
+  "homepage": "https://github.com/phughesmcr/wwbnlp#readme",
+  "keywords": [
+    "nlp",
+    "lexicon",
+    "wwbp",
+    "research",
+    "sentiment",
+    "perma",
+    "personality"
+  ]
+}
