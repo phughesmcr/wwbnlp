@@ -33,8 +33,8 @@ if (score('a', lexicon).values.value !== 2) throw new Error('Packed core failed'
 `,
   );
   execFileSync(process.execPath, [
-      "node_modules/typescript/bin/tsc",
-      "--ignoreConfig",
+    "node_modules/typescript/bin/tsc",
+    "--ignoreConfig",
     join(directory, "example.mts"),
     "--module",
     "NodeNext",
