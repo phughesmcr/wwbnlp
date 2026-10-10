@@ -6,6 +6,13 @@ DLATK reference (featureExtractor.addNGramTable and addLexiconFeat): each messag
 cleaned (newlines -> <NEWLINE>, shrinkSpace), HFT-tokenized and lowercased; n-grams
 never span messages; group_norm = count / (all n-grams of that size in the group); a
 weighted lexicon adds intercept + sum(weight * group_norm). Binary uses presence.
+
+Groups follow each paper: user-level models pool a user's messages into one DLATK
+group. Message-level models score each nonempty message; a message without matches
+predicts its intercepts. A user's PERMA or affect score is the mean of their message
+predictions (Schwartz et al. 2016, section 4.1); temporal orientation is the proportion
+of their messages classified as each class (Schwartz et al. 2015; Park et al. 2016).
+Input without any match in any category is unknown (None).
 """
 import hashlib
 import importlib.util
@@ -50,7 +57,8 @@ def remove_non_utf8(s):
 def tokenize(text):
     return [remove_non_utf8(token).lower() for token in tokenizer.tokenize(clean(text))]
 
-def score(messages, model):
+def predict(messages, model):
+    """One DLATK group's linear prediction, or None if no category has a match."""
     ngrams = {}
     for n in model['ngrams']:
         counts, total = {}, 0
@@ -60,11 +68,31 @@ def score(messages, model):
                 counts[gram] = counts.get(gram, 0) + 1
                 total += 1
         ngrams[n] = {gram: 1.0 if model['encoding'] == 'binary' else count / total for gram, count in counts.items()}
-    values = {}
+    matched, values = False, {}
     for category, weights in model['categories'].items():
         hits = [(gram, value) for grams in ngrams.values() for gram, value in grams.items() if gram in weights]
-        values[category] = model['intercepts'].get(category, 0) + sum(weights[g] * v for g, v in hits) if hits else None
-    return values
+        matched = matched or bool(hits)
+        values[category] = model['intercepts'].get(category, 0) + sum(weights[g] * v for g, v in hits)
+    return values if matched else None
+
+def score(messages, model):
+    categories = list(model['categories'])
+    messages = [m for m in messages if m]  # DLATK skips empty messages
+    if model['aggregation'] == 'pool':
+        values = predict(messages, model) if messages else None
+        return values or dict.fromkeys(categories)
+    predictions = [predict([m], model) for m in messages]
+    if not any(predictions):
+        return dict.fromkeys(categories)
+    predictions = [p or {c: model['intercepts'].get(c, 0) for c in categories} for p in predictions]
+    if model['aggregation'] == 'mean':
+        return {c: sum(p[c] for p in predictions) / len(predictions) for c in categories}
+    shares = dict.fromkeys(categories, 0.0)
+    for p in predictions:
+        winners = [c for c in categories if p[c] == max(p.values())]
+        for c in winners:
+            shares[c] += 1 / len(winners) / len(predictions)
+    return shares
 
 texts = [
     'I love spending time with my family :)',
@@ -94,7 +122,7 @@ atoms = list(":;=8<>()[]{}|/\\-o*'^_.,~#@!?\"%&+$0123456789DPxXO3") + [
 ]
 fuzz = [''.join(rng.choice(atoms) for _ in range(rng.randint(0, 40))) for _ in range(300)]
 models = json.loads((root / 'data/models.json').read_text())
-groups = [[t] for t in texts] + [texts[:4], texts[14:]]
+groups = [[t] for t in texts] + [['haha'], texts[:4], texts[14:], ['haha', texts[2], '', texts[3]]]
 fixture = {
     'description': __doc__.strip(),
     'tokenizer': [[text, tokenize(text)] for text in texts + fuzz],

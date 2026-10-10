@@ -54,10 +54,11 @@ output.
 - Always read `result.values`, `result.matches` and `result.info`. There are no
   `output: 'lex'/'matches'/'full'` modes.
 - No data or no matching evidence yields explicit status and null category
-  values. Intercepts alone cannot turn unknown input into a prediction.
-- Affect and PERMA now default to relative frequency, rather than the old binary
-  sums. Temporal orientation, Big Five and optimism use binary sums. Request an
-  encoding explicitly for comparisons.
+  values. Intercepts alone cannot turn unknown input into a prediction. Once any
+  category matches, every category is scored, intercept included.
+- Every model except age, gender and Dark Triad uses binary (presence) encoding,
+  as the papers did for message-level models. Request an encoding explicitly for
+  comparisons.
 - Canonical WWBP CSV weights and intercepts replace rounded or damaged legacy
   copies where available. Spanish accents are restored, and `permaEs` selects
   Spanish directly. The old wellbeing module mistakenly inspected `output`
@@ -66,35 +67,37 @@ output.
   so token streams differ from the old packages: for example `I’m` becomes `i`,
   `’`, `m`, and HTML entities are decoded.
 - Input may be one message (text or tokens) or a user’s messages as an array of
-  token arrays, e.g. `posts.map(tokenize)`. Ngrams never span messages. Pool a
-  user’s messages for the user-level models (age, gender, PERMA, Big Five, Dark
-  Triad) rather than averaging per-message scores.
+  token arrays, e.g. `posts.map(tokenize)`. Ngrams never span messages. Each
+  model combines messages as its paper did: age, gender, Big Five and Dark Triad
+  pool them; affect, PERMA and optimism average per-message predictions;
+  temporal orientation reports the share of messages in each class.
+  `messageValues` returns the per-message scores.
 - Frequency divides each ngram’s count by the number of ngrams of the same size
   (DLATK `group_norm`), not by the token count for every size. Bigram and
   trigram contributions therefore change.
 - All vocabulary ngram sizes are enabled by default. Age and gender are
   unigram-only, as published; their apparent phrases were spaced dots, which the
   tokenizer keeps as one token.
-- Vocabulary is repaired: mojibake and doubled backslashes are fixed, and
-  spreadsheet errors and other terms the tokenizer cannot produce are removed.
+- Vocabulary is repaired: mojibake and doubled backslashes are fixed, Big Five
+  quote terms are restored, and unrecoverable spreadsheet errors are removed.
   See [research methods](research.md).
 - English PERMA’s structural feature weights are retained and missing inputs are
   reported. Lexical-only results should not be described as the complete
   original trained model.
-- Big Five retains historical association weights except removed invalid terms
-  and the N category, whose signs are negated so that higher means more
-  neurotic, as in Schwartz et al. (2013). Scores have no calibrated personality
-  scale.
-- Dark Triad scores are natural logs of the 1–5 questionnaire scale; their
-  provenance is unverified.
-- Optimism is an experimental composition of future terms and affect weights. It
-  is not a separately trained optimism predictor.
+- Big Five weights are WWBP’s age- and gender-controlled top-100 correlations,
+  with N negated so that higher means more neurotic, as in Schwartz et al.
+  (2013). Scores have no calibrated personality scale.
+- Dark Triad scores are natural logs of the 1–5 questionnaire scale. The weights
+  are expanded word-cluster coefficients that barely move scores from the
+  intercepts; treat them as uncalibrated.
+- Optimism is an experimental composition of future-indicating terms and affect
+  weights, with no intercept. It is not a separately trained optimism predictor.
 - Gender returns the historical classifier margin, without converting it into an
   assertion about identity. The historical sign convention was negative/positive
   for the source’s male/female labels.
-- Temporal scores are one-vs-rest log-odds for a single message, not
-  probabilities. Any ranking must handle nulls and ties explicitly; there is no
-  automatic “Unknown” or orientation label.
+- Temporal `values` are the share of messages classified as past, present or
+  future (1 or 0 for a single message); the one-vs-rest log-odds are in
+  `messageValues`. Messages are not given an “Unknown” label.
 - Each match records its ngram size as `match.n`; `info.messageCount` reports
   the number of messages scored.
 - Results are synchronous with no async dependency or mutable global state.

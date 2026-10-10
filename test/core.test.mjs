@@ -225,3 +225,52 @@ test("percent coverage stays bounded when words and overlapping phrases all matc
   assert.equal(result.info.featureCount, 6);
   assert.equal(result.values.value, 1);
 });
+test("categories share evidence: once any category matches, every category is scored", () => {
+  const model = createLexicon({
+    id: "shared",
+    categories: { yes: { a: 1 }, no: { b: 1 } },
+    intercepts: { yes: 0.5, no: 2 },
+  });
+  assert.deepEqual({ ...score("a", model).values }, { yes: 1.5, no: 2 });
+  assert.deepEqual({ ...score("c", model).values }, { yes: null, no: null });
+});
+test("message-level aggregation averages messages or shares their argmax classes", () => {
+  const model = createLexicon({
+    id: "levels",
+    categories: { up: { good: 2 }, down: { bad: 3 } },
+    intercepts: { up: 1, down: 0 },
+    encoding: "binary",
+    aggregation: "mean",
+  });
+  const messages = [["good", "good"], ["bad"], [], ["meh"]];
+  const mean = score(messages, model);
+  // Three nonempty messages; "meh" predicts the intercepts (1, 0).
+  assert.ok(Math.abs(mean.values.up - 5 / 3) < 1e-12);
+  assert.ok(Math.abs(mean.values.down - 1) < 1e-12);
+  assert.deepEqual(mean.messageValues.map((v) => v.up), [3, 1, null, 1]);
+  const good = mean.matches.up.find((m) => m.term === "good");
+  assert.equal(good.count, 2);
+  assert.ok(Math.abs(good.contribution - 2 / 3) < 1e-12);
+  const shares = score(messages, model, { aggregation: "argmax" });
+  assert.ok(Math.abs(shares.values.up - 2 / 3) < 1e-12);
+  assert.ok(Math.abs(shares.values.down - 1 / 3) < 1e-12);
+  const tie = score([["good"], ["meh", "bad", "x"]], model, {
+    aggregation: "argmax",
+    includeIntercept: false,
+  });
+  assert.deepEqual({ ...tie.values }, { up: 0.5, down: 0.5 });
+  assert.equal(score([["meh"], []], model).status, "no-matches");
+  assert.equal(score([["meh"], []], model).messageValues[0].up, null);
+  const pooled = score(messages, model, { aggregation: "pool" });
+  assert.equal(pooled.values.up, 3);
+  assert.deepEqual(pooled.messageValues, []);
+  assert.throws(() => score("a", model, { aggregation: "median" }), RangeError);
+  assert.throws(
+    () => createLexicon({ id: "x", categories: { a: {} }, aggregation: "x" }),
+    RangeError,
+  );
+});
+test("numeric HTML entities accept any Unicode decimal digits, as Python int()", () => {
+  assert.deepEqual(tokenize("&#٦٥;&#𝟔𝟔; ok"), ["ab", "ok"]);
+  assert.deepEqual(tokenize("&#9999999; x"), ["&", "#9999999", ";", "x"]);
+});

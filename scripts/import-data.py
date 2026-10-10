@@ -31,7 +31,7 @@ configs = [
     ('permaEs', 'spanish_perma/spanish_perma_v1.csv', {}, None),
 ]
 for name, path, rename, single in configs:
-    model = {'id': name, 'language': 'es' if name == 'permaEs' else 'en', 'encoding': 'frequency', 'ngrams': [], 'categories': {}, 'intercepts': {}, 'features': {}}
+    model = {'id': name, 'language': 'es' if name == 'permaEs' else 'en', 'encoding': 'frequency', 'aggregation': 'pool', 'ngrams': [], 'categories': {}, 'intercepts': {}, 'features': {}}
     for row in csv.DictReader(io.StringIO(fetch('wwbp/lexica', path))):
         category = single or rename.get(row['category'], row['category'])
         term, weight = row['term'], float(row['weight'])
@@ -44,17 +44,27 @@ for name, path, rename, single in configs:
         else:
             model['categories'][category][term] = weight
     models[name] = model
+# The historical darktriad package hard-coded its intercepts in index.js; read, never executed.
+block = re.search(r'define intercept values.*?\{(.*?)\}', fetch('phughesmcr/darktriad', 'index.js'), re.S).group(1)
+darktriad_intercepts = {key: float(value) for key, value in re.findall(r'(\w+):\s*(-?[\d.]+)', block)}
 for name, repository, encoding, intercepts in [
     ('bigFive', 'bigfive', 'binary', dict.fromkeys(['O', 'C', 'E', 'A', 'N'], 0)),
-    ('darkTriad', 'darktriad', 'frequency', {'darktriad': 0.632024388686, 'machiavellianism': 0.596743883684, 'narcissism': 0.714881303759, 'psychopathy': 0.48892463341}),
+    ('darkTriad', 'darktriad', 'frequency', darktriad_intercepts),
 ]:
-    models[name] = {'id': name, 'language': 'en', 'encoding': encoding, 'ngrams': [], 'categories': json.loads(fetch('phughesmcr/' + repository, 'data/lexicon.json')), 'intercepts': intercepts, 'features': {}}
+    models[name] = {'id': name, 'language': 'en', 'encoding': encoding, 'aggregation': 'pool', 'ngrams': [], 'categories': json.loads(fetch('phughesmcr/' + repository, 'data/lexicon.json')), 'intercepts': intercepts, 'features': {}}
+if set(darktriad_intercepts) != set(models['darkTriad']['categories']):
+    raise ValueError('Dark Triad intercepts do not match its categories')
 # Export artefacts, listed in provenance.json. Removed terms cannot be produced by HFT.
 excluded = {
     'perma': {'#NAME?', '#REF!', 'Err:508'},  # spreadsheet formula errors; originals unrecoverable
-    'bigFive': {'', ' -', ': ', 'the lord,', '93.00%', '0.93%'},
+    'bigFive': {'93.00%', '0.93%'},  # spreadsheet percentage conversions; originals unrecoverable
 }
-renamed = {'perma': {'TRUE': 'true'}}  # spreadsheet boolean conversion
+renamed = {
+    'perma': {'TRUE': 'true'},  # spreadsheet boolean conversion
+    # Double quotes lost when WWBP's top-100 rmatrix CSVs were converted. HFT splits the comma
+    # from 'lord', so 'the lord,' can only be the trigram 'the lord ,'.
+    'bigFive': {'': '"', ' -': '" -', ': ': ': "', 'the lord,': 'the lord ,'},
+}
 
 def repair(name, term):
     if name in ('affect', 'age', 'gender'):
@@ -70,7 +80,7 @@ for name, model in models.items():
         for term, weight in terms.items():
             if term in excluded.get(name, ()):
                 continue
-            term = renamed.get(name, {}).get(term) or repair(name, term)
+            term = renamed[name][term] if term in renamed.get(name, {}) else repair(name, term)
             if term in fixed:
                 raise ValueError(f'Repaired term collides: {name} {category} {term!r}')
             fixed[term] = weight
@@ -78,11 +88,20 @@ for name, model in models.items():
 # Schwartz et al. (2013): 'depressed' and 'sick of' mark high neuroticism. The historical N
 # weights had the opposite sign (emotional stability), so they are negated.
 models['bigFive']['categories']['N'] = {term: -weight for term, weight in models['bigFive']['categories']['N'].items()}
-# Schwartz et al. (2015) and Park et al. (2016) encode ngrams as binary per-message indicators.
-models['temporal']['encoding'] = 'binary'
+# Message-level models use binary per-message ngram indicators: PERMA (Schwartz et al. 2016,
+# section 4.1; Smith et al. 2016, section 3.2), temporal orientation (Schwartz et al. 2015;
+# Park et al. 2016) and affect (inferred from its intercepts and Table 1; see docs/research.md).
+# A user's PERMA or affect score is the mean of their message predictions; their temporal
+# orientation is the proportion of their messages classified as each class.
+for name, aggregation in [('affect', 'mean'), ('perma', 'mean'), ('permaEs', 'mean'), ('temporal', 'argmax')]:
+    models[name]['encoding'], models[name]['aggregation'] = 'binary', aggregation
+# The historical future-term list is the whole temporal FUTURE vocabulary, including terms that
+# indicate the past; only positively weighted (future-indicating) terms are kept. A partial sum
+# is not on the affect scale, so the affect intercept is not added.
 future = json.loads(fetch('phughesmcr/optimismo', 'data/future.json'))
 affect = models['affect']['categories']['AFFECT']
-models['optimism'] = {'id': 'optimism', 'language': 'en', 'encoding': 'binary', 'ngrams': [], 'categories': {'OPTIMISM': {term: affect[term] for term in future if term in affect}}, 'intercepts': {'OPTIMISM': models['affect']['intercepts']['AFFECT']}, 'features': {}}
+future_weights = models['temporal']['categories']['FUTURE']
+models['optimism'] = {'id': 'optimism', 'language': 'en', 'encoding': 'binary', 'aggregation': 'mean', 'ngrams': [], 'categories': {'OPTIMISM': {term: affect[term] for term in future if term in affect and future_weights.get(term, 0) > 0}}, 'intercepts': {'OPTIMISM': 0}, 'features': {}}
 # HFT keeps spaced dots ('. . .') as one token.
 for model in models.values():
     model['ngrams'] = sorted({len(re.findall(r'\.(?:\s*\.)+|[^ ]+', term)) for terms in model['categories'].values() for term in terms})

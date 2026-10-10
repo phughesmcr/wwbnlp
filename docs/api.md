@@ -32,19 +32,41 @@ Definitions are validated, copied and frozen. Every category needs a
 term-to-finite-weight map. Intercepts default to zero. Optional structural
 feature weights use the same category map shape, keyed by feature names. Unknown
 intercept/feature categories are rejected. Custom definitions default to
-frequency encoding and `[1, 2, 3]` ngrams.
+frequency encoding, `pool` aggregation and `[1, 2, 3]` ngrams.
 
 `score` and `analyse` return `Analysis` with category maps and explicit status;
-see the README. A category without a lexical match or supplied structural
-feature returns `null`, even if it has an intercept. Empty input returns `empty`
-and all-null values. Mixed evidence can produce both numbers and nulls in the
-same result.
+see the README. Categories share evidence: if no category has a lexical match or
+supplied structural feature, every value is `null` (`no-matches`), even with
+intercepts; otherwise every category is scored, intercept included. Empty input
+returns `empty` and all-null values.
+
+## Aggregation
+
+Input with several messages is combined by the lexicon’s `aggregation`, which
+the option of the same name overrides:
+
+- `pool`: all messages form one DLATK group. Frequencies are relative to the
+  group’s ngrams; binary counts each term once per group. For user-level models.
+- `mean`: each nonempty message is scored on its own, and each category’s value
+  is the mean over those messages. A message without matches contributes its
+  intercepts. For message-level regression models.
+- `argmax`: each nonempty message is scored and assigned to its highest-scoring
+  category; values are the share of messages in each category, summing to one.
+  Ties split a message equally. For message-level classifiers.
+
+With `mean` and `argmax`, `messageValues` holds each message’s scores in input
+order (`null` for empty messages), and matches report total counts with
+contributions averaged over the scored messages, so `values` still equals the
+intercept plus the summed contributions under `mean`. If no message has a match,
+every value is `null`. Single-message input behaves identically under `pool` and
+`mean`.
 
 ## Options
 
 | Option                   | Default                    | Meaning                                                           |
 | ------------------------ | -------------------------- | ----------------------------------------------------------------- |
 | `encoding`               | Model default              | `frequency`, `binary`, or `percent`                               |
+| `aggregation`            | Model default              | `pool`, `mean`, or `argmax`; see above                            |
 | `ngrams`                 | Model vocabulary sizes     | Unique integer sizes 1–8; `[]` disables matching                  |
 | `includeIntercept`       | `true`                     | Include the model intercept, except in percent mode               |
 | `minWeight`, `maxWeight` | Negative/positive infinity | Inclusive term-weight filters                                     |
@@ -55,23 +77,24 @@ Unrecognized options throw, so legacy options cannot be silently ignored.
 Options, definitions and input arrays are never modified.
 
 Frequency mode divides each matched feature’s occurrence count by the number of
-ngrams of the same size (DLATK `group_norm`), summed over messages, before
-adding its weight and intercept. Ngrams never span messages. Binary mode counts
-unique terms once. Percent mode measures coverage of generated candidate
-features; repeated terms count, weights do not, and the result stays between
-zero and one.
+ngrams of the same size (DLATK `group_norm`) in the group, before adding its
+weight and intercept. Ngrams never span messages. Binary mode counts unique
+terms once per group. Percent mode, which is not a DLATK measure, measures
+coverage of generated candidate features; repeated terms count, weights do not,
+and the result stays between zero and one.
 
 `matches` sort by descending occurrence count, then term; `n` is the matched
 window size. Contributions retain full precision even when final values are
 rounded. `matchedFeatureCount` counts each matched occurrence once across all
 categories. It includes ngrams, so it is not a count of distinct word positions.
 
-Structural values are multiplied by their weights and added once per category.
-They are independent of lexical `minWeight`/`maxWeight` filters and are ignored
-in percent mode. Missing structural values produce warnings in weighted modes.
-Supplied zeros are measurements and count as evidence. Supply the same feature
-definitions and units as the original research pipeline; the engine does not
-invent them.
+Structural values are multiplied by their weights and added once per category,
+to every scored message under `mean` and `argmax`. Under `mean`, supplying each
+feature’s mean over the messages is therefore exact. They are independent of
+lexical `minWeight`/`maxWeight` filters and are ignored in percent mode. Missing
+structural values produce warnings in weighted modes. Supplied zeros are
+measurements and count as evidence. Supply the same feature definitions and
+units as the original research pipeline; the engine does not invent them.
 
 ## `tokenize(text)`
 

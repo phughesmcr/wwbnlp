@@ -1,6 +1,6 @@
 {
   "name": "wwbnlp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "World Wellbeing NLP: reproducible weighted-lexicon research tools.",
   "type": "module",
   "main": "./dist/src/index.js",

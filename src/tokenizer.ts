@@ -93,12 +93,21 @@ function entity(name: string): number | undefined {
   );
   return entities.get(name);
 }
+const DIGIT = /\p{Nd}/u;
+/** Decimal value of a Unicode digit, as Python's int(). Unicode encodes each
+ * script's digits 0-9 contiguously, so runs of digits start at a zero. */
+function digitValue(digit: string): number {
+  let code = digit.codePointAt(0)!;
+  const start = code;
+  while (DIGIT.test(String.fromCodePoint(code - 1))) code--;
+  return (start - code) % 10;
+}
 function html2unicode(s: string): string {
   for (const ent of new Set(s.match(/&#\p{Nd}+;/gu) ?? [])) {
-    // Python's int() also reads non-ASCII digits; those entities are left as is.
-    if (!/^&#[0-9]+;$/.test(ent)) continue;
+    let code = 0;
+    for (const digit of ent.slice(2, -1)) code = code * 10 + digitValue(digit);
     try {
-      s = s.replaceAll(ent, String.fromCodePoint(Number(ent.slice(2, -1))));
+      s = s.replaceAll(ent, String.fromCodePoint(code));
     } catch { /* out-of-range code points are left unchanged, as in HFT */ }
   }
   const named = new Set(s.match(/&[\p{L}\p{N}_]+;/gu) ?? []);
