@@ -125,6 +125,10 @@ texts = [
     'don’t “quote” me…… ..... . . . .. .',
     'Mañana voy a la playa con mi familia, ¡qué día! te quiero mucho\n\njajaja',
     'odio el lunes :( estoy triste y aburrido https://t.co/xyz',
+    # re.IGNORECASE widens HFT's literal letters only: \w excludes U+0345 even though
+    # it case-folds to a letter, while i also matches İ and ı, k K and s ſ.
+    'so happy\u0345sad today',
+    'see x.İnfo y.ınfo z.Kr w.uſ HTTPſ://a.CoM',
 ]
 rng = random.Random(2014)
 atoms = list(":;=8<>()[]{}|/\\-o*'^_.,~#@!?\"%&+$0123456789DPxXO3") + [
@@ -135,9 +139,17 @@ atoms = list(":;=8<>()[]{}|/\\-o*'^_.,~#@!?\"%&+$0123456789DPxXO3") + [
     '1,000', '9/11', '-3.5+', '.....', '. . .', '..', '<NEWLINE>', '\x08', 'the', ':-)', '>:(', '^_^', 'o.O',
 ]
 fuzz = [''.join(rng.choice(atoms) for _ in range(rng.randint(0, 40))) for _ in range(300)]
+# Case folding, URLs, tags, hashtags and entities, which the port matches differently.
+rng = random.Random(2026)
+atoms = list("<>=/#.-'_ \n:;()[]@?&+019aZoOdD") + [
+    '\u0345', 'İ', 'ı', 'K', 'ſ', 'Σ', '𝐀', '😀', 'http://', 'HTTPS://', '.com', '.CoM', '.İnfo', '.ınfo',
+    '.ſg', '.Kr', '.io', 'www', '<a href=x>', '<br />', '< />', '<b', 'b>', 'a=b', '/x?a=b;c=d', '#tag', '##',
+    '#a-b', "#a'", '&amp;', '&lt;', '&alpha;', '&#38;', '&#35;', '&#59;', '&#49;', '&#1633;', '8oD', 'o.O',
+]
+fuzz += [''.join(rng.choice(atoms) for _ in range(rng.randint(0, 40))) for _ in range(300)]
 models = json.loads((root / 'data/models.json').read_text())
 groups = [[t] for t in texts] + [
-    ['haha'], texts[:4], texts[14:], ['haha', texts[2], '', texts[3]],
+    ['haha'], texts[:4], texts[14:16], ['haha', texts[2], '', texts[3]],
     ['I will see you tomorrow :)', 'Yesterday was awful', "can't wait for the weekend!!", 'ok'],
 ]
 fixture = {

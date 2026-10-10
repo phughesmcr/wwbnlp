@@ -83,10 +83,17 @@ function finite(value: unknown, label: string): asserts value is number {
     throw new TypeError(`${label} must be finite`);
   }
 }
+/** Array#every, except that holes fail: sparse arrays are malformed input. */
+function every<T>(values: readonly T[], test: (value: T) => boolean): boolean {
+  for (let i = 0; i < values.length; i++) {
+    if (!(i in values) || !test(values[i]!)) return false;
+  }
+  return true;
+}
 function checkNgrams(value: readonly number[]): void {
   if (
     !Array.isArray(value) ||
-    value.some((n) => !Number.isSafeInteger(n) || n < 1 || n > 8)
+    !every(value, (n) => Number.isSafeInteger(n) && n >= 1 && n <= 8)
   ) {
     throw new RangeError("ngrams must contain integer sizes from 1 to 8");
   }
@@ -183,12 +190,12 @@ export function createLexicon(definition: LexiconDefinition): Lexicon {
 function toMessages(input: Input): readonly Tokens[] {
   if (typeof input === "string") return [tokenize(input)];
   const nested = Array.isArray(input) && input.length > 0 &&
-    input.every((message) => Array.isArray(message));
+    every(input, (message) => Array.isArray(message));
   const messages = (nested ? input : [input]) as readonly Tokens[];
   for (const tokens of messages) {
     if (
       !Array.isArray(tokens) ||
-      tokens.some((t) => typeof t !== "string" || !t)
+      !every(tokens, (t) => typeof t === "string" && t !== "")
     ) {
       throw new TypeError(
         "input must be text, an array of nonempty token strings, or an array of token arrays",

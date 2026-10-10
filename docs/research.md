@@ -98,9 +98,15 @@ become `<newline>`, runs of five or more dots become `....`) and the Happier Fun
 Tokenizer (HFT), lowercased, with Python’s Unicode `\s`, `\w` and `\d` classes,
 HTML entity decoding (including the double-decoding of `&amp;` and numeric
 entities written in any Unicode decimal digits), `\xNN` escape removal and
-`<non-utf8>` handling. It matches the pinned Python on the committed fixture,
-which includes 300 seeded fuzz strings, and matched it on 73,734 further fuzzed
-strings during development.
+`<non-utf8>` handling. HFT’s `re.IGNORECASE` is reproduced for its literal
+letters only (so `i` also matches `İ` and `ı`), since JavaScript’s `i` flag
+would also case-fold Unicode classes. It matches the pinned Python on the
+committed fixture, which includes 600 seeded fuzz strings, and matched it on
+100,000 further fuzzed strings during development. Tokenizing takes time linear
+in a message’s length, except that numeric entities decoding to `&`, `#`, `;` or
+a digit, which can form new entities, keep HFT’s entity-by-entity replacement
+(HFT’s order there follows Python’s hash-seeded set iteration; this package uses
+first occurrence).
 
 Scoring follows DLATK’s `addNGramTable` and `addLexiconFeat`. Ngrams never span
 messages. Frequency encoding divides each matched ngram’s count by the number of

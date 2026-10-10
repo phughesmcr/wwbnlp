@@ -182,9 +182,18 @@ test("structural features contribute exactly once and missing values are reporte
   );
 });
 test("invalid inputs and obsolete options fail clearly without mutating caller options", () => {
-  for (const input of [null, 12, {}, [""], ["a", 2]]) {
+  // Sparse arrays fail too: a hole is neither a token nor an ngram size.
+  for (const input of [null, 12, {}, [""], ["a", 2], ["a", ,], [["a"], ,]]) {
     assert.throws(() => score(input, lexicon), TypeError);
   }
+  assert.throws(
+    () => score("a", lexicon, { ngrams: new Array(1) }),
+    RangeError,
+  );
+  assert.throws(
+    () => createLexicon({ id: "x", categories: { a: {} }, ngrams: [1, , 2] }),
+    RangeError,
+  );
   for (
     const options of [
       { ngrams: [0] },
@@ -273,4 +282,23 @@ test("message-level aggregation averages messages or shares their argmax classes
 test("numeric HTML entities accept any Unicode decimal digits, as Python int()", () => {
   assert.deepEqual(tokenize("&#٦٥;&#𝟔𝟔; ok"), ["ab", "ok"]);
   assert.deepEqual(tokenize("&#9999999; x"), ["&", "#9999999", ";", "x"]);
+});
+test("tokenizing pathological long inputs stays linear", () => {
+  // Each took seconds to minutes when failed matches rescanned the rest of the
+  // text; the reference fixture checks the tokens themselves.
+  const inputs = [
+    " ".repeat(200_000) + "x",
+    "a.".repeat(100_000),
+    "a.".repeat(100_000) + "com",
+    "!".repeat(200_000),
+    "< ".repeat(100_000),
+    "<a".repeat(100_000) + ">",
+    "#".repeat(200_000),
+    Array.from({ length: 20_000 }, (_, i) => `&x${i};`).join(""),
+  ];
+  const start = performance.now();
+  for (const text of inputs) tokenize(text);
+  assert.ok(performance.now() - start < 2000);
+  assert.deepEqual(tokenize("a.".repeat(3) + "com"), ["a.a.a.com"]);
+  assert.deepEqual(tokenize("x\n \t\n y"), ["x", "<newline>", "y"]);
 });

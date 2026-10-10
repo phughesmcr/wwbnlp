@@ -38,7 +38,11 @@ export const models: Readonly<Record<LexiconId, Lexicon>> = Object.freeze(
  * mean valence of those messages; options apply to the affect step.
  */
 function optimism(input: Input, options: Options): Analysis {
-  if (options && typeof options === "object" && "aggregation" in options) {
+  // Checked here because spreading below would hide an invalid container.
+  if (!options || typeof options !== "object" || Array.isArray(options)) {
+    throw new TypeError("options must be an object");
+  }
+  if ("aggregation" in options) {
     throw new RangeError("optimism does not accept an aggregation option");
   }
   const messages: readonly Tokens[] = typeof input === "string"

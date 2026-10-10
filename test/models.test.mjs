@@ -92,6 +92,12 @@ test("message-level research models follow their papers", () => {
     () => analyse("x", "optimism", { aggregation: "pool" }),
     RangeError,
   );
+  // Invalid options fail whether or not any message is future-oriented.
+  for (const options of [null, 12, [], "x"]) {
+    for (const text of [mixed[0], mixed[1]]) {
+      assert.throws(() => analyse(text, "optimism", options), TypeError);
+    }
+  }
 });
 test("Dark Triad warns below the authors' 500-token minimum", () => {
   assert.equal(models.darkTriad.minTokens, 500);

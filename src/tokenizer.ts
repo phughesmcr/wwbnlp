@@ -8,11 +8,26 @@ const SPACE = String.raw`\t-\r\x1c-\x20\x85\xa0  -     　`;
 const S = `[${SPACE}]`;
 const W = String.raw`\p{L}\p{N}_`;
 const D = String.raw`\p{Nd}`;
+// HFT compiles with re.IGNORECASE, which only widens its literal letters (Python
+// also matches i to İ and ı, k to the Kelvin sign, s to ſ). JavaScript's `i`
+// flag would case-fold Unicode classes too (U+0345 is not \w but folds to ι),
+// so the letters are spelled out instead.
+const FOLDS: Record<string, string> = {
+  i: "iI\u0130\u0131",
+  k: "kK\u212a",
+  s: "sS\u017f",
+};
+const fold = (word: string) =>
+  word.replace(/[a-z]/g, (c) => `[${FOLDS[c] ?? c + c.toUpperCase()}]`);
+const HTTP = String.raw`${fold("http")}${fold("s")}?:\/\/`;
+const TLD =
+  "com|net|gov|edu|info|org|ly|be|gl|co|gs|pr|me|cc|us|gd|nl|ws|am|im|fm|kr|to|jp|sg"
+    .split("|").map(fold).join("|");
 const EMOTICON = [
-  String.raw`[<>]?[:;=8>][\-o*']?[)\](\[dDpPxX/:}{@|\\]`, // eyes, nose, mouth
-  String.raw`[)\](\[dDpPxX/:}{@|\\][\-o*']?[:;=8<][<>]?`, // mouth, nose, eyes
+  String.raw`[<>]?[:;=8>][\-oO*']?[)\](\[dDpPxX/:}{@|\\]`, // eyes, nose, mouth
+  String.raw`[)\](\[dDpPxX/:}{@|\\][\-oO*']?[:;=8<][<>]?`, // mouth, nose, eyes
   String.raw`<[/\\]?3`, // hearts
-  String.raw`\(?\(?#?[>\-^*+o~][_.|oO,][<\-^*+o~][#;]?\)?\)?`, // eye, nose, eye
+  String.raw`\(?\(?#?[>\-^*+oO~][_.|oO,][<\-^*+oO~][#;]?\)?\)?`, // eye, nose, eye
 ].join("|");
 // HFT order matters: phone numbers may contain whitespace, the final element
 // is the last-ditch whitespace split.
@@ -21,12 +36,14 @@ const PARTS = [
     .raw`(?:\+?[01][\-${SPACE}.]*)?(?:\(?${D}{3}[\-${SPACE}.)]*)?${D}{3}[\-${SPACE}.]*${D}{4}`,
   EMOTICON,
   String
-    .raw`(?:https?:\/\/)?(?:[${W}\-]+\.)+(?:com|net|gov|edu|info|org|ly|be|gl|co|gs|pr|me|cc|us|gd|nl|ws|am|im|fm|kr|to|jp|sg)(?:\/[${SPACE}\x08$])?`,
-  String.raw`https?:\/\/`,
+    .raw`(?:${HTTP})?(?:[${W}\-]+\.)+(?:${TLD})(?:\/[${SPACE}\x08$])?`,
+  HTTP,
   String.raw`\[[${W}]+\]`,
   String.raw`\/[${W}]+\?(?:;?[${W}]+=[${W}]+)+`,
-  String
-    .raw`<[^>]+[${W}]=[^>]+>|<[^>]+${S}\/>|<[^>${SPACE}]+>?|<?[^<${SPACE}]+>`,
+  String.raw`<[^>]+[${W}]=[^>]+>`,
+  String.raw`<[^>]+${S}\/>`,
+  String.raw`<[^>${SPACE}]+>?`,
+  String.raw`<?[^<${SPACE}]+>`,
   String.raw`@[${W}]+`,
   String.raw`#+[${W}]+[${W}'\-]*[${W}]+`,
   String.raw`[${W}][${W}'\-]+[${W}]`,
@@ -35,8 +52,28 @@ const PARTS = [
   String.raw`\.(?:${S}*\.)+`,
   `[^${SPACE}]`,
 ];
-const WORD = new RegExp(PARTS.map((p) => `(?:${p})`).join("|"), "giu");
-const NEWLINES = new RegExp(`${S}*\\n${S}*`, "gu");
+// Parts whose failed attempts can rescan the rest of a long run: URLs, three
+// HTML tag forms and hashtags. They are only tried where a linear precomputed
+// check shows they match, so tokenizing stays linear in the text's length.
+const URL = 2, TAG_ATTR = 6, TAG_SELF = 7, TAG_END = 9, HASHTAG = 11;
+const GATED = [URL, TAG_ATTR, TAG_SELF, TAG_END, HASHTAG];
+const words = new Map<number, RegExp>();
+function wordRegExp(mask: number): RegExp {
+  let re = words.get(mask);
+  if (!re) {
+    const parts = PARTS.filter((_, i) =>
+      !GATED.includes(i) || mask & (1 << GATED.indexOf(i))
+    );
+    re = new RegExp(parts.map((p) => `(?:${p})`).join("|"), "uy");
+    words.set(mask, re);
+  }
+  return re;
+}
+const PLAIN = new RegExp(wordRegExp(0).source, "gu");
+const HTTP_AT = new RegExp(HTTP, "uy");
+const TLD_DOT = new RegExp(String.raw`\.(?:${TLD})`, "gu");
+const WORD_RUN = new RegExp(`[${W}]+`, "gu");
+const SPACE_RUN = new RegExp(`${S}+`, "gu");
 const MULTI_SPACE = new RegExp(`${S}${S}+`, "gu");
 const START_SPACE = new RegExp(`^${S}+`, "u");
 const END_SPACE = new RegExp(`${S}+$`, "u");
@@ -102,23 +139,122 @@ function digitValue(digit: string): number {
   while (DIGIT.test(String.fromCodePoint(code - 1))) code--;
   return (start - code) % 10;
 }
+const DIGIT_ENTITY = /&#\p{Nd}+;/gu;
+const NAMED_ENTITY = /&[\p{L}\p{N}_]+;/gu;
+// Decoded characters that can complete another numeric entity.
+const CASCADE = /[&#;\p{Nd}]/u;
+function decodeDigits(ent: string): string | undefined {
+  let code = 0;
+  for (const digit of ent.slice(2, -1)) code = code * 10 + digitValue(digit);
+  // Out-of-range code points are left unchanged, as in HFT.
+  return code <= 0x10ffff ? String.fromCodePoint(code) : undefined;
+}
 function html2unicode(s: string): string {
-  for (const ent of new Set(s.match(/&#\p{Nd}+;/gu) ?? [])) {
-    let code = 0;
-    for (const digit of ent.slice(2, -1)) code = code * 10 + digitValue(digit);
-    try {
-      s = s.replaceAll(ent, String.fromCodePoint(code));
-    } catch { /* out-of-range code points are left unchanged, as in HFT */ }
+  const digits = new Map<string, string | undefined>();
+  for (const ent of s.match(DIGIT_ENTITY) ?? []) {
+    if (!digits.has(ent)) digits.set(ent, decodeDigits(ent));
   }
-  const named = new Set(s.match(/&[\p{L}\p{N}_]+;/gu) ?? []);
-  named.delete("&amp;");
-  for (const ent of named) {
-    const code = entity(ent.slice(1, -1));
-    if (code !== undefined) s = s.replaceAll(ent, String.fromCodePoint(code));
-    // HFT replaces &amp; inside this loop: only when another named entity exists.
-    s = s.replaceAll("&amp;", " and ");
+  // HFT replaces each distinct entity in turn. Unless a decoded character can
+  // form a new entity, one pass gives the same result in linear time.
+  if ([...digits.values()].some((c) => c !== undefined && CASCADE.test(c))) {
+    for (const [ent, c] of digits) {
+      if (c !== undefined) s = s.replaceAll(ent, c);
+    }
+  } else if (digits.size) {
+    s = s.replace(DIGIT_ENTITY, (ent) => digits.get(ent) ?? ent);
+  }
+  // HFT replaces &amp; inside its loop over the other named entities: only
+  // when another exists. Decoded names cannot form new entities.
+  if ((s.match(NAMED_ENTITY) ?? []).some((ent) => ent !== "&amp;")) {
+    s = s.replace(NAMED_ENTITY, (ent) => {
+      if (ent === "&amp;") return " and ";
+      const code = entity(ent.slice(1, -1));
+      return code === undefined ? ent : String.fromCodePoint(code);
+    });
   }
   return s;
+}
+/** DLATK's `\s*\n\s*` always matches a whole whitespace run; replacing runs
+ * directly avoids its quadratic backtracking over long runs without newlines. */
+function newlines(s: string): string {
+  return s.replace(
+    SPACE_RUN,
+    (run) => run.includes("\n") ? " <NEWLINE> " : run,
+  );
+}
+const isLow = (code: number) => (code & 0xfc00) === 0xdc00;
+const isHigh = (code: number) => (code & 0xfc00) === 0xd800;
+/** HFT's `findall`, trying the gated parts only where they match. */
+function split(s: string): string[] {
+  // Without `>`, `#` or a top-level domain no gated part can match.
+  if (!/[>#]/.test(s) && s.search(TLD_DOT) < 0) {
+    return s.match(PLAIN) ?? [];
+  }
+  const n = s.length;
+  const word = new Uint8Array(n + 3), space = new Uint8Array(n + 3);
+  const tld = new Uint8Array(n + 3);
+  for (const m of s.matchAll(WORD_RUN)) {
+    word.fill(1, m.index, m.index + m[0].length);
+  }
+  for (const m of s.matchAll(SPACE_RUN)) {
+    space.fill(1, m.index, m.index + m[0].length);
+  }
+  for (const m of s.matchAll(TLD_DOT)) tld[m.index] = 1;
+  // next*[i]: first such index at or after i, else n. *End[i]: end of the run
+  // starting at i. chain[i]: end of the `(?:[\w-]+\.)+` run from i, else -1.
+  const array = (fill: number) => new Int32Array(n + 3).fill(fill);
+  const nextGt = array(n), nextTld = array(n), nextWordEq = array(n);
+  const nextWord = array(n), chain = array(-1);
+  const tagEnd = array(n), hashEnd = array(n), wordEnd = array(n);
+  const labelEnd = array(n);
+  for (let i = n - 1; i >= 0; i--) {
+    const c = s.charCodeAt(i);
+    nextGt[i] = c === 62 ? i : nextGt[i + 1]!;
+    nextTld[i] = tld[i] ? i : nextTld[i + 1]!;
+    nextWordEq[i] = c === 61 && word[i - 1] ? i : nextWordEq[i + 1]!;
+    nextWord[i] = word[i] && !isLow(c) ? i : nextWord[i + 1]!;
+    tagEnd[i] = c === 60 || space[i] ? i : tagEnd[i + 1]!;
+    hashEnd[i] = c === 35 ? hashEnd[i + 1]! : i;
+    wordEnd[i] = word[i] || c === 39 || c === 45 ? wordEnd[i + 1]! : i;
+    if (word[i] || c === 45) {
+      const end = labelEnd[i] = labelEnd[i + 1]!;
+      if (s.charCodeAt(end) === 46) {
+        chain[i] = chain[end + 1]! > 0 ? chain[end + 1]! : end + 1;
+      }
+    } else labelEnd[i] = i;
+  }
+  const hasTld = (i: number) => chain[i]! > 0 && nextTld[i]! < chain[i]!;
+  const tokens: string[] = [];
+  for (let p = 0;;) {
+    while (p < n && space[p]) p++;
+    if (p >= n) return tokens;
+    const c = s.charCodeAt(p);
+    let url = hasTld(p), attr = false, self = false;
+    if (!url && (c === 104 || c === 72)) {
+      HTTP_AT.lastIndex = p;
+      url = HTTP_AT.test(s) && hasTld(HTTP_AT.lastIndex);
+    }
+    if (c === 60) {
+      const gt = nextGt[p + 1]!;
+      // The word character before `=` must leave a character after `<`.
+      let eq = nextWordEq[p + 3]!;
+      if (eq === p + 3 && isLow(s.charCodeAt(p + 2))) eq = nextWordEq[p + 4]!;
+      attr = gt < n && eq + 1 < gt;
+      self = gt < n && gt >= p + 4 && s.charCodeAt(gt - 1) === 47 &&
+        space[gt - 2] === 1;
+    }
+    const start = c === 60 ? p + 1 : p;
+    const end = tagEnd[start]! > start && nextGt[start + 1]! < tagEnd[start]!;
+    const h = hashEnd[p]!;
+    const hashtag = c === 35 && word[h] === 1 &&
+      nextWord[h + (isHigh(s.charCodeAt(h)) ? 2 : 1)]! < wordEnd[h]!;
+    const re = wordRegExp(
+      +url | +attr << 1 | +self << 2 | +end << 3 | +hashtag << 4,
+    );
+    re.lastIndex = p;
+    tokens.push(re.exec(s)![0]); // `[^\s]` matches any remaining character
+    p = re.lastIndex;
+  }
 }
 /**
  * Tokenize one message as WWBP/DLATK did: newlines become `<newline>`, spaces
@@ -127,11 +263,13 @@ function html2unicode(s: string): string {
  */
 export function tokenize(text: string): string[] {
   if (typeof text !== "string") throw new TypeError("text must be a string");
-  let s = text.replace(NEWLINES, " <NEWLINE> ").replace(MULTI_SPACE, " ")
-    .replace(/\.\.\.\.\.+/g, "....").replace(END_SPACE, "")
-    .replace(START_SPACE, "").replace(NEWLINES, " <NEWLINE> ");
-  s = html2unicode(s).replace(/\\x[0-9a-z]{1,4}/g, " ");
-  return (s.match(WORD) ?? []).map((token) =>
+  const s = newlines(
+    newlines(text).replace(MULTI_SPACE, " ").replace(/\.\.\.\.\.+/g, "....")
+      .replace(END_SPACE, "").replace(START_SPACE, ""),
+  );
+  return split(html2unicode(s).replace(/\\x[0-9a-z]{1,4}/g, " ")).map((
+    token,
+  ) =>
     token.split(SPLIT_SPACE).filter(Boolean).map((w) =>
       LONE_SURROGATE.test(w) ? "<NON-UTF8>" : w
     ).join(" ").toLowerCase()
