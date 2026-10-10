@@ -14,6 +14,9 @@ Attribution-NonCommercial-ShareAlike 3.0 Unported. That licence contains a
 - Historical Big Five and Dark Triad data were distributed by Peter Hughes under
   CC BY-NC-SA 3.0 with the research attributions documented in
   `docs/research.md`.
+- The tokenizer ports the Happier Fun Tokenizer (Christopher Potts 2011, updated
+  by H. Andrew Schwartz and Maarten Sap) and DLATK message cleaning, under CC
+  BY-NC-SA 3.0; see `licenses/happierfuntokenizing.txt`.
 - The optimism allowlist is from Peter Hughes’s optimismo project under CC
   BY-NC-SA 3.0.
 - MIT notices for the predecessor utility projects lex-helpers (P. Hughes, 2024)

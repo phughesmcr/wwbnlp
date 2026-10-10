@@ -1,4 +1,6 @@
 /** Shared weighted-lexicon engine. No I/O, global state, or runtime dependencies. */
+import { tokenize } from "./tokenizer.ts";
+export { tokenize };
 export type Encoding = "frequency" | "binary" | "percent";
 export type Weights = Readonly<
   Record<string, Readonly<Record<string, number>>>
@@ -18,8 +20,12 @@ export interface Lexicon extends LexiconDefinition {
   readonly ngrams: readonly number[];
   readonly encoding: Encoding;
 }
+/** One message's tokens. */
+export type Tokens = readonly string[];
+/** Message text, one message's tokens, or a group's messages as token arrays. */
+export type Input = string | Tokens | readonly Tokens[];
 export interface Options {
-  /** Frequency divides term occurrences by original token count, including unmatched tokens. */
+  /** Frequency divides each n-gram's occurrences by the number of n-grams of that size (DLATK group_norm). */
   readonly encoding?: Encoding;
   /** Sizes include unigrams explicitly. An empty array disables lexical matching. */
   readonly ngrams?: readonly number[];
@@ -33,6 +39,8 @@ export interface Options {
 }
 export interface Match {
   readonly term: string;
+  /** Number of tokens in the matched window. */
+  readonly n: number;
   readonly count: number;
   readonly weight: number;
   readonly contribution: number;
@@ -46,6 +54,7 @@ export interface Analysis {
     Record<string, Readonly<Record<string, number>>>
   >;
   readonly info: {
+    readonly messageCount: number;
     readonly tokenCount: number;
     readonly featureCount: number;
     readonly matchedFeatureCount: number;
@@ -142,16 +151,29 @@ export function createLexicon(definition: LexiconDefinition): Lexicon {
     encoding,
   });
 }
-/** Unicode-aware convenience tokenizer; supply exact study tokens when reproducing a pipeline. */
-export function tokenize(text: string): string[] {
-  if (typeof text !== "string") throw new TypeError("text must be a string");
-  return text.normalize("NFC").toLowerCase().replace(/[’‘]/gu, "'").match(
-    /https?:\/\/[^\s]+|<3|[:;=8][\-o*']?[\)\]\(\[dp/\\]|[\)\]\(\[d][:;=8]|[#@][\p{L}\p{M}\p{N}_]+|\p{N}+(?:[.,:]\p{N}+)+|[\p{L}\p{M}\p{N}_]+(?:['-][\p{L}\p{M}\p{N}_]+)*|\.{3,}|\p{Extended_Pictographic}(?:\uFE0F|\p{M})*|[^\s]/gu,
-  ) ?? [];
+function toMessages(input: Input): readonly Tokens[] {
+  if (typeof input === "string") return [tokenize(input)];
+  const nested = Array.isArray(input) && input.length > 0 &&
+    input.every((message) => Array.isArray(message));
+  const messages = (nested ? input : [input]) as readonly Tokens[];
+  for (const tokens of messages) {
+    if (
+      !Array.isArray(tokens) ||
+      tokens.some((t) => typeof t !== "string" || !t)
+    ) {
+      throw new TypeError(
+        "input must be text, an array of nonempty token strings, or an array of token arrays",
+      );
+    }
+  }
+  return messages;
 }
-/** Score a validated lexicon. Input token arrays are used exactly as supplied. */
+/**
+ * Score a validated lexicon. Token arrays are used exactly as supplied; ngrams
+ * never span messages.
+ */
 export function score(
-  input: string | readonly string[],
+  input: Input,
   lexicon: Lexicon,
   options: Options = {},
 ): Analysis {
@@ -191,14 +213,9 @@ export function score(
     (!Number.isInteger(options.decimals) || options.decimals < 0 ||
       options.decimals > 15)
   ) throw new RangeError("decimals must be an integer from 0 to 15");
-  const tokens = typeof input === "string" ? tokenize(input) : input;
-  if (
-    !Array.isArray(tokens) || tokens.some((t) => typeof t !== "string" || !t)
-  ) {
-    throw new TypeError(
-      "input must be text or an array of nonempty token strings",
-    );
-  }
+  const messages = toMessages(input);
+  let tokenCount = 0;
+  for (const tokens of messages) tokenCount += tokens.length;
   const suppliedFeatures = options.features ?? {};
   if (typeof suppliedFeatures !== "object" || Array.isArray(suppliedFeatures)) {
     throw new TypeError("features must be an object");
@@ -212,20 +229,28 @@ export function score(
     }
     finite(value, `Feature ${key}`);
   }
-  const counts = new Map<string, number>();
+  const counts = new Map<number, Map<string, number>>();
+  const totals = new Map<number, number>();
   let featureCount = 0;
   for (const n of new Set(ngrams)) {
-    for (let i = 0; i <= tokens.length - n; i++) {
-      const term = tokens.slice(i, i + n).join(" ");
-      counts.set(term, (counts.get(term) ?? 0) + 1);
-      featureCount++;
+    const grams = new Map<string, number>();
+    let total = 0;
+    for (const tokens of messages) {
+      for (let i = 0; i <= tokens.length - n; i++) {
+        const term = tokens.slice(i, i + n).join(" ");
+        grams.set(term, (grams.get(term) ?? 0) + 1);
+        total++;
+      }
     }
+    counts.set(n, grams);
+    totals.set(n, total);
+    featureCount += total;
   }
   const values: Record<string, number | null> = Object.create(null);
   const matches: Record<string, Match[]> = Object.create(null);
   const featureContributions: Record<string, Record<string, number>> = Object
     .create(null);
-  const matchedTerms = new Set<string>();
+  const matchedTerms = new Map<string, number>();
   let hasEvidence = false;
   const warnings = encoding === "percent"
     ? []
@@ -239,24 +264,26 @@ export function score(
     const categoryMatches: Match[] = [];
     const covariates: Record<string, number> = Object.create(null);
     let matchedCount = 0;
-    for (const [term, count] of counts) {
-      if (!own(weights, term)) continue;
-      const weight = weights[term]!;
-      if (weight < min || weight > max) continue;
-      const contribution = encoding === "binary"
-        ? weight
-        : encoding === "percent"
-        ? count / featureCount
-        : weight * (count / tokens.length);
-      total += contribution;
-      matchedCount += count;
-      categoryMatches.push({ term, count, weight, contribution });
-      matchedTerms.add(term);
+    for (const [n, grams] of counts) {
+      for (const [term, count] of grams) {
+        if (!own(weights, term)) continue;
+        const weight = weights[term]!;
+        if (weight < min || weight > max) continue;
+        const contribution = encoding === "binary"
+          ? weight
+          : encoding === "percent"
+          ? count / featureCount
+          : weight * (count / totals.get(n)!);
+        total += contribution;
+        matchedCount += count;
+        categoryMatches.push({ term, n, count, weight, contribution });
+        matchedTerms.set(`${n}\u0000${term}`, count);
+      }
     }
     if (encoding === "percent") {
       total = featureCount ? matchedCount / featureCount : 0;
     }
-    if (encoding !== "percent" && tokens.length) {
+    if (encoding !== "percent" && tokenCount) {
       for (
         const [feature, weight] of Object.entries(lexicon.features[category]!)
       ) {
@@ -267,7 +294,7 @@ export function score(
         }
       }
     }
-    const evidence = tokens.length > 0 &&
+    const evidence = tokenCount > 0 &&
       (categoryMatches.length > 0 || Object.keys(covariates).length > 0);
     hasEvidence ||= evidence;
     if (!Number.isFinite(total)) {
@@ -279,20 +306,21 @@ export function score(
         : Number(total.toFixed(options.decimals))
       : null;
     matches[category] = categoryMatches.sort((a, b) =>
-      b.count - a.count || a.term.localeCompare(b.term, "en")
+      b.count - a.count || a.term.localeCompare(b.term, "en") || a.n - b.n
     );
     featureContributions[category] = covariates;
   }
   let matchedFeatureCount = 0;
-  for (const term of matchedTerms) matchedFeatureCount += counts.get(term)!;
+  for (const count of matchedTerms.values()) matchedFeatureCount += count;
   return {
     model: lexicon.id,
-    status: !tokens.length ? "empty" : hasEvidence ? "ok" : "no-matches",
+    status: !tokenCount ? "empty" : hasEvidence ? "ok" : "no-matches",
     values,
     matches,
     featureContributions,
     info: {
-      tokenCount: tokens.length,
+      messageCount: messages.length,
+      tokenCount,
       featureCount,
       matchedFeatureCount,
       uniqueMatchedTerms: matchedTerms.size,

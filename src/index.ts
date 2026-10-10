@@ -2,6 +2,7 @@ import definitions from "../data/models.json" with { type: "json" };
 import {
   type Analysis,
   createLexicon,
+  type Input,
   type Lexicon,
   type LexiconDefinition,
   type Options,
@@ -28,7 +29,7 @@ export const models: Readonly<Record<ModelId, Lexicon>> = Object.freeze(
 );
 /** Select a bundled research lexicon or supply a validated custom lexicon. */
 export function analyse(
-  input: string | readonly string[],
+  input: Input,
   model: ModelId | Lexicon,
   options: Options = {},
 ): Analysis {

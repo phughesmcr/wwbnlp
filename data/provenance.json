@@ -54,14 +54,25 @@
       "commit": "229a71b92ec692863430a3c83aa0725d10edfd2b",
       "path": "data/future.json",
       "sha256": "232099a4332a8274062947d363ca0be6147cd74d2c4c09f3ae6073be8f7166c5"
+    },
+    {
+      "repository": "dlatk/dlatk",
+      "commit": "a24a0ddf4039e913b024a0192de0dbeab812b014",
+      "path": "dlatk/lib/happierfuntokenizing.py",
+      "sha256": "2365761a7a173b85fdd2e00b5f29dbf282e6c0170d9397b59fa3ac865d268437"
     }
   ],
   "transformations": [
     "CSV category labels mapped to historical public names; intercept and named structural features separated from lexical terms.",
     "Spanish PERMA restored from original UTF-8 WWBP CSV rather than corrupted legacy JSON.",
     "Optimism is the intersection of historical future-term allowlist and canonical affect weights; an experimental composition, not a separately trained model.",
-    "Big Five and Dark Triad retain historical repository weights.",
-    "An empty-string term with weight 0.078492 in the historical Big Five O category is excluded: it cannot represent a token.",
-    "Default ngram sizes are derived from the actual vocabulary, including age/gender phrases omitted by the historical wrappers."
+    "Big Five and Dark Triad retain historical repository weights, except that Big Five N weights are negated: their signs described emotional stability, contrary to Schwartz et al. (2013).",
+    "Terms that the Happier Fun Tokenizer cannot produce are removed: PERMA spreadsheet errors #NAME?, #REF! and Err:508; Big Five '', ' -', ': ', 'the lord,', '93.00%' and '0.93%'.",
+    "PERMA 'TRUE' (spreadsheet boolean conversion) is restored to 'true'.",
+    "UTF-8 terms mis-decoded as cp1252 are repaired, e.g. 'â™¥' to '♥' and 'don â€™ t' to 'don ’ t' (age, gender, PERMA).",
+    "Doubled backslashes in affect, age and gender terms, e.g. ':\\\\', are restored to the single-backslash HFT tokens they escape.",
+    "Temporal orientation uses binary encoding, following the per-message binary ngram indicators of Schwartz et al. (2015) and Park et al. (2016).",
+    "Default ngram sizes are the token counts of the vocabulary under HFT, where spaced dots ('. . .') are one token; age and gender are therefore unigram-only, as in Sap et al. (2014).",
+    "The tokenizer is a port of the pinned DLATK Happier Fun Tokenizer; scripts/dlatk-reference.py executes that file only to regenerate test fixtures."
   ]
 }

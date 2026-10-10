@@ -1,0 +1,10 @@
+src/tokenizer.ts ports the Happier Fun Tokenizer and DLATK message cleaning:
+
+  dlatk/dlatk, commit a24a0ddf4039e913b024a0192de0dbeab812b014
+  dlatk/lib/happierfuntokenizing.py and dlatk/textCleaner.py
+
+Happier Fun Tokenizer: original by Christopher Potts (Copyright 2011), updated
+by H. Andrew Schwartz and Maarten Sap. Licensed under a Creative Commons
+Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+
+http://creativecommons.org/licenses/by-nc-sa/3.0/

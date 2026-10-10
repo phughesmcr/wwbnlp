@@ -39,7 +39,7 @@ test("encoding, intercepts and weight filters are explicit", () => {
     41.8189,
   );
 });
-test("contiguous ngrams include final window, duplicates are not double-counted", () => {
+test("each ngram size is normalized by its own ngram count, as DLATK group_norm", () => {
   const model = createLexicon({
     id: "phrase",
     categories: { value: { "really good": 2, good: 1 } },
@@ -47,13 +47,31 @@ test("contiguous ngrams include final window, duplicates are not double-counted"
   const result = score(["really", "good", "really", "good"], model, {
     ngrams: [1, 2, 2],
   });
-  assert.equal(result.values.value, 1.5);
+  // 2 of 3 bigrams and 2 of 4 unigrams: 2 * 2/3 + 1 * 2/4
+  assert.ok(Math.abs(result.values.value - (4 / 3 + 0.5)) < 1e-15);
   assert.equal(result.info.featureCount, 7);
-  assert.equal(
-    result.matches.value.find((m) => m.term === "really good").count,
-    2,
-  );
+  const phrase = result.matches.value.find((m) => m.term === "really good");
+  assert.equal(phrase.count, 2);
+  assert.equal(phrase.n, 2);
   assert.equal(score("really", model).status, "no-matches");
+});
+test("messages are pooled for relative frequency but ngrams never span them", () => {
+  const model = createLexicon({
+    id: "messages",
+    categories: { value: { "good day": 4, good: 1 } },
+  });
+  const result = score([["good"], ["day", "good", "day"]], model);
+  assert.equal(result.info.messageCount, 2);
+  assert.equal(result.info.tokenCount, 4);
+  assert.equal(result.info.featureCount, 4 + 2 + 1);
+  // "good day" once in 2 bigrams; "good" twice in 4 unigrams
+  assert.equal(result.values.value, 4 * 0.5 + 1 * 0.5);
+  assert.equal(
+    score([["good", "day"]], model).values.value,
+    score(["good", "day"], model).values.value,
+  );
+  assert.throws(() => score([["good"], "day"], model), TypeError);
+  assert.equal(score([[], []], model).status, "empty");
 });
 test("empty and unknown text never create intercept-only predictions", () => {
   for (const input of ["", "  ", []]) {
@@ -63,19 +81,38 @@ test("empty and unknown text never create intercept-only predictions", () => {
   assert.equal(score("unmatched", lexicon).status, "no-matches");
   assert.equal(score("unmatched", lexicon).values.value, null);
 });
-test("Unicode, social punctuation and emoticons survive tokenization", () => {
+test("tokenization follows the Happier Fun Tokenizer, quirks included", () => {
   assert.deepEqual(tokenize("DÍA de ❤️ familia! I’m happy :) <3..."), [
     "día",
     "de",
-    "❤️",
+    "❤",
+    "\uFE0F",
     "familia",
     "!",
-    "i'm",
+    "i",
+    "’",
+    "m",
     "happy",
     ":)",
     "<3",
     "...",
   ]);
+  assert.deepEqual(
+    tokenize("Bored . . . so bored\n\nXD >:( -_- http://t.co/abc"),
+    [
+      "bored",
+      ". . .",
+      "so",
+      "bored",
+      "<newline>",
+      "xd",
+      ">:(",
+      "-_-",
+      "http://t.co",
+      "/",
+      "abc",
+    ],
+  );
   assert.deepEqual(tokenize("mañana 12.5 @name #tag ! !"), [
     "mañana",
     "12.5",
@@ -84,7 +121,28 @@ test("Unicode, social punctuation and emoticons survive tokenization", () => {
     "!",
     "!",
   ]);
-  assert.deepEqual(tokenize("di\u0301a"), ["día"]);
+  // DLATK replaces invalid UTF-16 (here, a lone surrogate) per token.
+  assert.deepEqual(tokenize("ok wo\ud83drd :)"), [
+    "ok",
+    "wo",
+    "<non-utf8>",
+    "rd",
+    ":)",
+  ]);
+  // HFT decodes &amp; only when another named entity is present.
+  assert.deepEqual(tokenize("Tom &amp; Jerry"), [
+    "tom",
+    "&",
+    "amp",
+    ";",
+    "jerry",
+  ]);
+  assert.deepEqual(tokenize("Tom &amp; Jerry &hearts;"), [
+    "tom",
+    "and",
+    "jerry",
+    "♥",
+  ]);
 });
 test("custom data is immutable and prototype keys cannot be interpreted as weights", () => {
   const terms = { a: 2 };

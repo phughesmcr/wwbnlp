@@ -55,28 +55,48 @@ output.
   `output: 'lex'/'matches'/'full'` modes.
 - No data or no matching evidence yields explicit status and null category
   values. Intercepts alone cannot turn unknown input into a prediction.
-- Affect, temporal orientation and PERMA now default to relative frequency,
-  rather than the old binary sums. Big Five and optimism retain binary sums as
-  association measures. Request an encoding explicitly for comparisons.
+- Affect and PERMA now default to relative frequency, rather than the old binary
+  sums. Temporal orientation, Big Five and optimism use binary sums. Request an
+  encoding explicitly for comparisons.
 - Canonical WWBP CSV weights and intercepts replace rounded or damaged legacy
   copies where available. Spanish accents are restored, and `permaEs` selects
   Spanish directly. The old wellbeing module mistakenly inspected `output`
   rather than `lang` when selecting Spanish.
-- Matching uses one token stream for all ngrams. All vocabulary ngram sizes are
-  enabled by default; the old age/gender wrappers ignored phrase terms. To
-  compare unigrams, set `ngrams: [1]` and supply controlled tokens.
+- `tokenize` is a port of the studies’ DLATK cleaning and Happier Fun Tokenizer,
+  so token streams differ from the old packages: for example `I’m` becomes `i`,
+  `’`, `m`, and HTML entities are decoded.
+- Input may be one message (text or tokens) or a user’s messages as an array of
+  token arrays, e.g. `posts.map(tokenize)`. Ngrams never span messages. Pool a
+  user’s messages for the user-level models (age, gender, PERMA, Big Five, Dark
+  Triad) rather than averaging per-message scores.
+- Frequency divides each ngram’s count by the number of ngrams of the same size
+  (DLATK `group_norm`), not by the token count for every size. Bigram and
+  trigram contributions therefore change.
+- All vocabulary ngram sizes are enabled by default. Age and gender are
+  unigram-only, as published; their apparent phrases were spaced dots, which the
+  tokenizer keeps as one token.
+- Vocabulary is repaired: mojibake and doubled backslashes are fixed, and
+  spreadsheet errors and other terms the tokenizer cannot produce are removed.
+  See [research methods](research.md).
 - English PERMA’s structural feature weights are retained and missing inputs are
   reported. Lexical-only results should not be described as the complete
   original trained model.
-- Big Five retains historical association weights except an invalid empty-string
-  O term. Scores have no calibrated personality scale.
+- Big Five retains historical association weights except removed invalid terms
+  and the N category, whose signs are negated so that higher means more
+  neurotic, as in Schwartz et al. (2013). Scores have no calibrated personality
+  scale.
+- Dark Triad scores are natural logs of the 1–5 questionnaire scale; their
+  provenance is unverified.
 - Optimism is an experimental composition of future terms and affect weights. It
   is not a separately trained optimism predictor.
 - Gender returns the historical classifier margin, without converting it into an
   assertion about identity. The historical sign convention was negative/positive
   for the source’s male/female labels.
-- Temporal scores are not probabilities. Any ranking must handle nulls and ties
-  explicitly; there is no automatic “Unknown” or orientation label.
+- Temporal scores are one-vs-rest log-odds for a single message, not
+  probabilities. Any ranking must handle nulls and ties explicitly; there is no
+  automatic “Unknown” or orientation label.
+- Each match records its ngram size as `match.n`; `info.messageCount` reports
+  the number of messages scored.
 - Results are synchronous with no async dependency or mutable global state.
   Caller options are never mutated.
 
@@ -94,7 +114,7 @@ output.
 | `places`              | `decimals` (final scores only)                                               |
 | `logs`, `suppressLog` | Removed; the library does not log                                            |
 | `sortBy`              | Sort `result.matches[category]` in your application                          |
-| `wcGrams`             | Removed; weighted frequency uses original tokens                             |
+| `wcGrams`             | Removed; each ngram size has its own denominator                             |
 | `locale`              | Normalize spelling in your preprocessing if needed; no automatic translation |
 | `lang: 'spanish'`     | Model ID `permaEs`                                                           |
 

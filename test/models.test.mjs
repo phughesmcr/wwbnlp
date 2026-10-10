@@ -2,25 +2,29 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { test } from "node:test";
-import { analyse, models } from "../dist/src/index.js";
+import { analyse, models, tokenize } from "../dist/src/index.js";
 const fixture = JSON.parse(
-  readFileSync(new URL("./research-fixture.json", import.meta.url)),
+  readFileSync(new URL("./dlatk-fixture.json", import.meta.url)),
 );
-test("all nine model variants reproduce pinned coefficient calculations", () => {
-  assert.deepEqual(
-    Object.keys(models).sort(),
-    Object.keys(fixture.expected).sort(),
-  );
-  for (const [id, expected] of Object.entries(fixture.expected)) {
-    const result = analyse(fixture.tokens, id);
-    assert.equal(result.status, "ok", id);
-    for (const [category, value] of Object.entries(expected)) {
-      if (value === null) {
-        assert.equal(result.values[category], null, `${id}.${category}`);
-      } else {assert.ok(
-          Math.abs(result.values[category] - value) < 1e-10,
-          `${id}.${category}: ${result.values[category]} vs ${value}`,
-        );}
+test("tokenizer reproduces the pinned Happier Fun Tokenizer and DLATK cleaning", () => {
+  for (const [text, tokens] of fixture.tokenizer) {
+    assert.deepEqual(tokenize(text), tokens, JSON.stringify(text));
+  }
+});
+test("all nine models reproduce DLATK weighted-lexicon scores per message and per group", () => {
+  for (const { texts, expected } of fixture.scores) {
+    assert.deepEqual(Object.keys(models).sort(), Object.keys(expected).sort());
+    const messages = texts.map(tokenize);
+    for (const [id, values] of Object.entries(expected)) {
+      const result = analyse(messages, id);
+      for (const [category, value] of Object.entries(values)) {
+        const label = `${id}.${category} ${JSON.stringify(texts)}`;
+        if (value === null) assert.equal(result.values[category], null, label);
+        else {assert.ok(
+            Math.abs(result.values[category] - value) < 1e-10,
+            `${label}: ${result.values[category]} vs ${value}`,
+          );}
+      }
     }
   }
 });

@@ -5,6 +5,7 @@ import hashlib
 import io
 import json
 from pathlib import Path
+import re
 import urllib.request
 
 root = Path(__file__).resolve().parents[1]
@@ -48,12 +49,43 @@ for name, repository, encoding, intercepts in [
     ('darkTriad', 'darktriad', 'frequency', {'darktriad': 0.632024388686, 'machiavellianism': 0.596743883684, 'narcissism': 0.714881303759, 'psychopathy': 0.48892463341}),
 ]:
     models[name] = {'id': name, 'language': 'en', 'encoding': encoding, 'ngrams': [], 'categories': json.loads(fetch('phughesmcr/' + repository, 'data/lexicon.json')), 'intercepts': intercepts, 'features': {}}
+# Export artefacts, listed in provenance.json. Removed terms cannot be produced by HFT.
+excluded = {
+    'perma': {'#NAME?', '#REF!', 'Err:508'},  # spreadsheet formula errors; originals unrecoverable
+    'bigFive': {'', ' -', ': ', 'the lord,', '93.00%', '0.93%'},
+}
+renamed = {'perma': {'TRUE': 'true'}}  # spreadsheet boolean conversion
+
+def repair(name, term):
+    if name in ('affect', 'age', 'gender'):
+        term = term.replace('\\\\', '\\')  # backslashes doubled by export escaping
+    try:  # UTF-8 bytes previously decoded as cp1252
+        return bytes(ord(c) if ord(c) < 256 else c.encode('cp1252')[0] for c in term).decode('utf-8')
+    except (UnicodeError, ValueError):
+        return term
+
+for name, model in models.items():
+    for category, terms in model['categories'].items():
+        fixed = {}
+        for term, weight in terms.items():
+            if term in excluded.get(name, ()):
+                continue
+            term = renamed.get(name, {}).get(term) or repair(name, term)
+            if term in fixed:
+                raise ValueError(f'Repaired term collides: {name} {category} {term!r}')
+            fixed[term] = weight
+        model['categories'][category] = fixed
+# Schwartz et al. (2013): 'depressed' and 'sick of' mark high neuroticism. The historical N
+# weights had the opposite sign (emotional stability), so they are negated.
+models['bigFive']['categories']['N'] = {term: -weight for term, weight in models['bigFive']['categories']['N'].items()}
+# Schwartz et al. (2015) and Park et al. (2016) encode ngrams as binary per-message indicators.
+models['temporal']['encoding'] = 'binary'
 future = json.loads(fetch('phughesmcr/optimismo', 'data/future.json'))
 affect = models['affect']['categories']['AFFECT']
 models['optimism'] = {'id': 'optimism', 'language': 'en', 'encoding': 'binary', 'ngrams': [], 'categories': {'OPTIMISM': {term: affect[term] for term in future if term in affect}}, 'intercepts': {'OPTIMISM': models['affect']['intercepts']['AFFECT']}, 'features': {}}
-del models['bigFive']['categories']['O']['']
+# HFT keeps spaced dots ('. . .') as one token.
 for model in models.values():
-    model['ngrams'] = sorted({len(term.split(' ')) for terms in model['categories'].values() for term in terms})
+    model['ngrams'] = sorted({len(re.findall(r'\.(?:\s*\.)+|[^ ]+', term)) for terms in model['categories'].values() for term in terms})
 content = json.dumps(models, ensure_ascii=False, indent=2) + '\n'
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--check', action='store_true', help='Verify without modifying bundled data')
