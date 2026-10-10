@@ -17,8 +17,6 @@ Attribution-NonCommercial-ShareAlike 3.0 Unported. That licence contains a
 - The tokenizer ports the Happier Fun Tokenizer (Christopher Potts 2011, updated
   by H. Andrew Schwartz and Maarten Sap) and DLATK message cleaning, under CC
   BY-NC-SA 3.0; see `licenses/happierfuntokenizing.txt`.
-- The optimism allowlist is from Peter Hughes’s optimismo project under CC
-  BY-NC-SA 3.0.
 - MIT notices for the predecessor utility projects lex-helpers (P. Hughes, 2024)
   and weighted-lexica (Peter Hughes, 2020) are retained in `licenses/`.
 

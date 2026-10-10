@@ -1,5 +1,5 @@
 {
-  "description": "Regenerate test/dlatk-fixture.json from the original Happier Fun Tokenizer and DLATK's\nngram and weighted-lexicon arithmetic. Development only: unlike import-data.py, this\nexecutes the pinned, checksum-verified upstream tokenizer (see data/provenance.json).\n\nDLATK reference (featureExtractor.addNGramTable and addLexiconFeat): each message is\ncleaned (newlines -> <NEWLINE>, shrinkSpace), HFT-tokenized and lowercased; n-grams\nnever span messages; group_norm = count / (all n-grams of that size in the group); a\nweighted lexicon adds intercept + sum(weight * group_norm). Binary uses presence.\n\nGroups follow each paper: user-level models pool a user's messages into one DLATK\ngroup. Message-level models score each nonempty message; a message without matches\npredicts its intercepts. A user's PERMA or affect score is the mean of their message\npredictions (Schwartz et al. 2016, section 4.1); temporal orientation is the proportion\nof their messages classified as each class (Schwartz et al. 2015; Park et al. 2016).\nInput without any match in any category is unknown (None).",
+  "description": "Regenerate test/dlatk-fixture.json from the original Happier Fun Tokenizer and DLATK's\nngram and weighted-lexicon arithmetic. Development only: unlike import-data.py, this\nexecutes the pinned, checksum-verified upstream tokenizer (see data/provenance.json).\n\nDLATK reference (featureExtractor.addNGramTable and addLexiconFeat): each message is\ncleaned (newlines -> <NEWLINE>, shrinkSpace), HFT-tokenized and lowercased; n-grams\nnever span messages; group_norm = count / (all n-grams of that size in the group); a\nweighted lexicon adds intercept + sum(weight * group_norm). Binary uses presence.\n\nGroups follow each paper: user-level models pool a user's messages into one DLATK\ngroup. Message-level models score each nonempty message; a message without matches\npredicts its intercepts. A user's PERMA or affect score is the mean of their message\npredictions (Schwartz et al. 2016, section 4.1); temporal orientation is the proportion\nof their messages classified as each class (Schwartz et al. 2015; Park et al. 2016).\nInput without any match in any category is unknown (None).\n\nOptimism follows WWBP's lexica guidance: \"filter messages to those future-oriented using\nthe future orientation lexicon, then apply the affect lexicon\". A message is\nfuture-oriented when FUTURE is its highest temporal score; OPTIMISM is the mean\nvalence of those messages.",
   "tokenizer": [
     [
       "I love spending time with my family :)",
@@ -6862,7 +6862,7 @@
           "psychopathy": 0.48892463341
         },
         "optimism": {
-          "OPTIMISM": 1.12149276456432
+          "OPTIMISM": null
         }
       }
     },
@@ -6924,7 +6924,7 @@
           "psychopathy": 0.48892463341
         },
         "optimism": {
-          "OPTIMISM": 0.919935184358
+          "OPTIMISM": 4.5509398306503
         }
       }
     },
@@ -6986,7 +6986,7 @@
           "psychopathy": 0.4895041270930843
         },
         "optimism": {
-          "OPTIMISM": 1.2547644108438
+          "OPTIMISM": 7.3945038095288
         }
       }
     },
@@ -7048,7 +7048,7 @@
           "psychopathy": 0.48892463341
         },
         "optimism": {
-          "OPTIMISM": 0.0511880497793
+          "OPTIMISM": null
         }
       }
     },
@@ -7110,7 +7110,7 @@
           "psychopathy": null
         },
         "optimism": {
-          "OPTIMISM": -0.1489383807451
+          "OPTIMISM": null
         }
       }
     },
@@ -7172,7 +7172,7 @@
           "psychopathy": 0.48892463341
         },
         "optimism": {
-          "OPTIMISM": 0.4187811931905
+          "OPTIMISM": null
         }
       }
     },
@@ -7234,7 +7234,7 @@
           "psychopathy": 0.4868459817759
         },
         "optimism": {
-          "OPTIMISM": 0.0605828255325
+          "OPTIMISM": null
         }
       }
     },
@@ -7296,7 +7296,7 @@
           "psychopathy": 0.48892463341
         },
         "optimism": {
-          "OPTIMISM": 0.256195922372
+          "OPTIMISM": 4.7471015209836
         }
       }
     },
@@ -7358,7 +7358,7 @@
           "psychopathy": 0.487365644684425
         },
         "optimism": {
-          "OPTIMISM": 1.3828940188243
+          "OPTIMISM": null
         }
       }
     },
@@ -7482,7 +7482,7 @@
           "psychopathy": 0.48892463341
         },
         "optimism": {
-          "OPTIMISM": 7.6030616193e-05
+          "OPTIMISM": null
         }
       }
     },
@@ -7544,7 +7544,7 @@
           "psychopathy": 0.48892463341
         },
         "optimism": {
-          "OPTIMISM": -0.07204449779040001
+          "OPTIMISM": null
         }
       }
     },
@@ -7606,7 +7606,7 @@
           "psychopathy": 0.48870522930973165
         },
         "optimism": {
-          "OPTIMISM": -0.0425997334883
+          "OPTIMISM": null
         }
       }
     },
@@ -7668,7 +7668,7 @@
           "psychopathy": 0.48892463341
         },
         "optimism": {
-          "OPTIMISM": -0.104224184924
+          "OPTIMISM": null
         }
       }
     },
@@ -7730,7 +7730,7 @@
           "psychopathy": 0.48892463341
         },
         "optimism": {
-          "OPTIMISM": 0.358198367658
+          "OPTIMISM": null
         }
       }
     },
@@ -7919,7 +7919,7 @@
           "psychopathy": 0.4890972485496421
         },
         "optimism": {
-          "OPTIMISM": 0.836845102386355
+          "OPTIMISM": 5.97272182008955
         }
       }
     },
@@ -7982,7 +7982,7 @@
           "psychopathy": 0.48892463341
         },
         "optimism": {
-          "OPTIMISM": 0.179099183829
+          "OPTIMISM": null
         }
       }
     },
@@ -8047,7 +8047,72 @@
           "psychopathy": 0.48923666847012226
         },
         "optimism": {
-          "OPTIMISM": 0.4353174868743667
+          "OPTIMISM": 7.3945038095288
+        }
+      }
+    },
+    {
+      "texts": [
+        "I will see you tomorrow :)",
+        "Yesterday was awful",
+        "can't wait for the weekend!!",
+        "ok"
+      ],
+      "expected": {
+        "affect": {
+          "AFFECT": 5.575302799559251,
+          "INTENSITY": 3.487583861156789
+        },
+        "age": {
+          "AGE": 50.68231132268359
+        },
+        "gender": {
+          "GENDER": 12.47375582057606
+        },
+        "temporal": {
+          "PRESENT": 0.25,
+          "FUTURE": 0.5,
+          "PAST": 0.25
+        },
+        "perma": {
+          "NEG_E": -0.049949274475,
+          "NEG_A": 0.020287731875,
+          "POS_R": 0.19523774784999998,
+          "POS_P": 0.538562067875,
+          "NEG_M": -0.021663365125,
+          "NEG_R": -0.025403818850000003,
+          "NEG_P": -0.005674346775000005,
+          "POS_M": 0.0876719945,
+          "POS_A": 0.10811158297500001,
+          "POS_E": 0.264129855675
+        },
+        "permaEs": {
+          "NEG_P": 2.3779606310880004,
+          "POS_P": 3.149654325978,
+          "POS_A": 3.50339146617462,
+          "NEG_A": 2.33215911334135,
+          "NEG_E": 1.593858689923425,
+          "POS_E": 2.2406573682045003,
+          "POS_M": 1.804196526062,
+          "NEG_M": 1.480842345972905,
+          "NEG_R": 1.70430687763375,
+          "POS_R": 2.163123226287575
+        },
+        "bigFive": {
+          "N": -0.090409,
+          "A": 0.081151,
+          "E": 0.224974,
+          "C": 0.19905699999999998,
+          "O": -0.08655499999999999
+        },
+        "darkTriad": {
+          "darktriad": 0.632024388686,
+          "machiavellianism": 0.596743883684,
+          "narcissism": 0.7144508456546224,
+          "psychopathy": 0.4891662668679388
+        },
+        "optimism": {
+          "OPTIMISM": 5.97849950261115
         }
       }
     }

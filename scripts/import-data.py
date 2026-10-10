@@ -90,18 +90,11 @@ for name, model in models.items():
 models['bigFive']['categories']['N'] = {term: -weight for term, weight in models['bigFive']['categories']['N'].items()}
 # Message-level models use binary per-message ngram indicators: PERMA (Schwartz et al. 2016,
 # section 4.1; Smith et al. 2016, section 3.2), temporal orientation (Schwartz et al. 2015;
-# Park et al. 2016) and affect (inferred from its intercepts and Table 1; see docs/research.md).
+# Park et al. 2016) and affect (inferred from its Table 1; see docs/research.md).
 # A user's PERMA or affect score is the mean of their message predictions; their temporal
 # orientation is the proportion of their messages classified as each class.
 for name, aggregation in [('affect', 'mean'), ('perma', 'mean'), ('permaEs', 'mean'), ('temporal', 'argmax')]:
     models[name]['encoding'], models[name]['aggregation'] = 'binary', aggregation
-# The historical future-term list is the whole temporal FUTURE vocabulary, including terms that
-# indicate the past; only positively weighted (future-indicating) terms are kept. A partial sum
-# is not on the affect scale, so the affect intercept is not added.
-future = json.loads(fetch('phughesmcr/optimismo', 'data/future.json'))
-affect = models['affect']['categories']['AFFECT']
-future_weights = models['temporal']['categories']['FUTURE']
-models['optimism'] = {'id': 'optimism', 'language': 'en', 'encoding': 'binary', 'aggregation': 'mean', 'ngrams': [], 'categories': {'OPTIMISM': {term: affect[term] for term in future if term in affect and future_weights.get(term, 0) > 0}}, 'intercepts': {'OPTIMISM': 0}, 'features': {}}
 # HFT keeps spaced dots ('. . .') as one token.
 for model in models.values():
     model['ngrams'] = sorted({len(re.findall(r'\.(?:\s*\.)+|[^ ]+', term)) for terms in model['categories'].values() for term in terms})

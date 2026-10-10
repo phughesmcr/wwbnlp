@@ -11,9 +11,12 @@ test("tokenizer reproduces the pinned Happier Fun Tokenizer and DLATK cleaning",
     assert.deepEqual(tokenize(text), tokens, JSON.stringify(text));
   }
 });
-test("all nine models reproduce DLATK weighted-lexicon scores per message and per group", () => {
+test("all nine models reproduce the reference scores per message and per group", () => {
   for (const { texts, expected } of fixture.scores) {
-    assert.deepEqual(Object.keys(models).sort(), Object.keys(expected).sort());
+    assert.deepEqual(
+      [...Object.keys(models), "optimism"].sort(),
+      Object.keys(expected).sort(),
+    );
     const messages = texts.map(tokenize);
     for (const [id, values] of Object.entries(expected)) {
       const result = analyse(messages, id);
@@ -54,7 +57,7 @@ test("message-level research models follow their papers", () => {
     Math.abs(Object.values(user.values).reduce((a, b) => a + b) - 1) < 1e-12,
   );
   // Affect and PERMA: binary per-message indicators, averaged over messages.
-  for (const id of ["affect", "perma", "permaEs", "optimism"]) {
+  for (const id of ["affect", "perma", "permaEs"]) {
     assert.equal(models[id].encoding, "binary", id);
     assert.equal(models[id].aggregation, "mean", id);
   }
@@ -67,11 +70,23 @@ test("message-level research models follow their papers", () => {
   // Big Five quote terms restored from WWBP's rmatrix files.
   assert.equal(models.bigFive.categories.O['" -'], 0.122342);
   assert.equal(models.bigFive.categories.A["the lord ,"], 0.040261);
-  // Optimism keeps only future-indicating terms and has no affect intercept.
-  for (const term of Object.keys(models.optimism.categories.OPTIMISM)) {
-    assert.ok(models.temporal.categories.FUTURE[term] > 0, term);
-  }
-  assert.equal(models.optimism.intercepts.OPTIMISM, 0);
+  // Optimism: affect valence of the future-oriented messages only.
+  const mixed = ["I will see you tomorrow :)", "Yesterday was awful", "ok"];
+  const opt = analyse(mixed.map(tokenize), "optimism");
+  const firstOnly = analyse([tokenize(mixed[0])], "affect").values.AFFECT;
+  assert.equal(opt.values.OPTIMISM, firstOnly);
+  assert.deepEqual(opt.messageValues.map((v) => v.OPTIMISM), [
+    firstOnly,
+    null,
+    null,
+  ]);
+  assert.equal(opt.info.messageCount, 3);
+  assert.equal(analyse("Yesterday was awful", "optimism").status, "no-matches");
+  assert.equal(analyse("", "optimism").status, "empty");
+  assert.throws(
+    () => analyse("x", "optimism", { aggregation: "pool" }),
+    RangeError,
+  );
 });
 test("npm entry point can be used from both ESM and supported CommonJS", () => {
   const require = createRequire(import.meta.url);

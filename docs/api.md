@@ -105,9 +105,10 @@ detection. Spanish uses the explicit `permaEs` model.
 
 ## `models`
 
-Readonly registry of bundled model definitions. Categories, coefficients,
-intercepts, structural features and default ngram sizes are available for
-inspection. Importing `wwbnlp/core` avoids loading this registry.
+Readonly registry of the eight bundled lexicon definitions. `optimism` is not a
+lexicon: `analyse` combines `models.temporal` and `models.affect`. Categories,
+coefficients, intercepts, structural features and default ngram sizes are
+available for inspection. Importing `wwbnlp/core` avoids loading this registry.
 
 ## Runtime support
 

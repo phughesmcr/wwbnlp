@@ -13,6 +13,11 @@ predicts its intercepts. A user's PERMA or affect score is the mean of their mes
 predictions (Schwartz et al. 2016, section 4.1); temporal orientation is the proportion
 of their messages classified as each class (Schwartz et al. 2015; Park et al. 2016).
 Input without any match in any category is unknown (None).
+
+Optimism follows WWBP's lexica guidance: "filter messages to those future-oriented using
+the future orientation lexicon, then apply the affect lexicon". A message is
+future-oriented when FUTURE is its highest temporal score; OPTIMISM is the mean
+valence of those messages.
 """
 import hashlib
 import importlib.util
@@ -94,6 +99,15 @@ def score(messages, model):
             shares[c] += 1 / len(winners) / len(predictions)
     return shares
 
+def optimism(messages, models):
+    temporal = models['temporal']
+    future = []
+    for m in messages:
+        p = predict([m], temporal) if m else None
+        if p and p['FUTURE'] == max(p.values()):
+            future.append(m)
+    return {'OPTIMISM': score(future, models['affect'])['AFFECT']}
+
 texts = [
     'I love spending time with my family :)',
     "ugh so tired of this... can't wait for the weekend!!!",
@@ -122,12 +136,18 @@ atoms = list(":;=8<>()[]{}|/\\-o*'^_.,~#@!?\"%&+$0123456789DPxXO3") + [
 ]
 fuzz = [''.join(rng.choice(atoms) for _ in range(rng.randint(0, 40))) for _ in range(300)]
 models = json.loads((root / 'data/models.json').read_text())
-groups = [[t] for t in texts] + [['haha'], texts[:4], texts[14:], ['haha', texts[2], '', texts[3]]]
+groups = [[t] for t in texts] + [
+    ['haha'], texts[:4], texts[14:], ['haha', texts[2], '', texts[3]],
+    ['I will see you tomorrow :)', 'Yesterday was awful', "can't wait for the weekend!!", 'ok'],
+]
 fixture = {
     'description': __doc__.strip(),
     'tokenizer': [[text, tokenize(text)] for text in texts + fuzz],
     'scores': [
-        {'texts': group, 'expected': {name: score([tokenize(t) for t in group], model) for name, model in models.items()}}
+        {'texts': group, 'expected': {
+            **{name: score([tokenize(t) for t in group], model) for name, model in models.items()},
+            'optimism': optimism([tokenize(t) for t in group], models),
+        }}
         for group in groups
     ],
 }

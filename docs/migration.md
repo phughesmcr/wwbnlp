@@ -69,9 +69,10 @@ output.
 - Input may be one message (text or tokens) or a user’s messages as an array of
   token arrays, e.g. `posts.map(tokenize)`. Ngrams never span messages. Each
   model combines messages as its paper did: age, gender, Big Five and Dark Triad
-  pool them; affect, PERMA and optimism average per-message predictions;
-  temporal orientation reports the share of messages in each class.
-  `messageValues` returns the per-message scores.
+  pool them; affect and PERMA average per-message predictions; temporal
+  orientation reports the share of messages in each class; optimism averages the
+  valence of future-oriented messages. `messageValues` returns the per-message
+  scores.
 - Frequency divides each ngram’s count by the number of ngrams of the same size
   (DLATK `group_norm`), not by the token count for every size. Bigram and
   trigram contributions therefore change.
@@ -90,8 +91,10 @@ output.
 - Dark Triad scores are natural logs of the 1–5 questionnaire scale. The weights
   are expanded word-cluster coefficients that barely move scores from the
   intercepts; treat them as uncalibrated.
-- Optimism is an experimental composition of future-indicating terms and affect
-  weights, with no intercept. It is not a separately trained optimism predictor.
+- Optimism follows WWBP’s guidance: messages classified as future-oriented by
+  the temporal orientation lexicon are scored with the affect lexicon, and
+  OPTIMISM is their mean valence (1–9). The old fixed term list is gone. It is
+  not a separately trained optimism predictor.
 - Gender returns the historical classifier margin, without converting it into an
   assertion about identity. The historical sign convention was negative/positive
   for the source’s male/female labels.

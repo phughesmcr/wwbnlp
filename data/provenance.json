@@ -56,12 +56,6 @@
       "sha256": "c4b7950ffa896b6f93c149793c19c8b50bba621687565db38b503cc71fa775aa"
     },
     {
-      "repository": "phughesmcr/optimismo",
-      "commit": "229a71b92ec692863430a3c83aa0725d10edfd2b",
-      "path": "data/future.json",
-      "sha256": "232099a4332a8274062947d363ca0be6147cd74d2c4c09f3ae6073be8f7166c5"
-    },
-    {
       "repository": "dlatk/dlatk",
       "commit": "a24a0ddf4039e913b024a0192de0dbeab812b014",
       "path": "dlatk/lib/happierfuntokenizing.py",
@@ -73,7 +67,6 @@
     "Spanish PERMA restored from original UTF-8 WWBP CSV rather than corrupted legacy JSON.",
     "Big Five weights are the historical package's copy of WWBP's age- and gender-controlled top-100 1to3gram correlations (Schwartz et al. 2013); N weights are negated because WWBP's 'neu' column is oriented towards emotional stability.",
     "Dark Triad weights are the historical package's word-level expansion of word2vec cluster coefficients; intercepts are parsed (not executed) from its index.js.",
-    "Optimism is the historical future-term allowlist, restricted to terms with a positive temporal FUTURE weight, with canonical affect weights and no intercept; an experimental composition, not a separately trained model.",
     "Spreadsheet artefacts that the Happier Fun Tokenizer cannot produce are removed: PERMA #NAME?, #REF! and Err:508; Big Five '93.00%' and '0.93%'.",
     "PERMA 'TRUE' (spreadsheet boolean conversion) is restored to 'true'.",
     "Big Five double quotes lost in conversion are restored: '' to '\"', ' -' to '\" -', ': ' to ': \"'; 'the lord,' becomes the HFT trigram 'the lord ,'.",
@@ -82,6 +75,7 @@
     "Affect, PERMA and Spanish PERMA use binary per-message encoding, and a group's score is the mean of its message scores (Schwartz et al. 2016; Smith et al. 2016; affect inferred, see docs/research.md).",
     "Temporal orientation uses binary per-message encoding; a group's score is the proportion of messages classified as each class (Schwartz et al. 2015; Park et al. 2016).",
     "Default ngram sizes are the token counts of the vocabulary under HFT, where spaced dots ('. . .') are one token; age and gender are therefore unigram-only, as in Sap et al. (2014).",
-    "The tokenizer is a port of the pinned DLATK Happier Fun Tokenizer; scripts/dlatk-reference.py executes that file only to regenerate test fixtures."
+    "The tokenizer is a port of the pinned DLATK Happier Fun Tokenizer; scripts/dlatk-reference.py executes that file only to regenerate test fixtures.",
+    "Optimism is not a lexicon: following WWBP's guidance, messages classified as future-oriented by the temporal orientation lexicon are scored with the affect lexicon."
   ]
 }

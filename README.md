@@ -5,8 +5,8 @@ dependency-free package.
 
 Sentiment and arousal, temporal orientation, PERMA in English and Spanish, Big
 Five associations, Dark Triad scores, age and historical binary-gender scores,
-and an experimental optimism composition. This consolidates Peter Hughes’s
-earlier npm modules around one inspectable scoring engine.
+and optimism (the valence of future-oriented messages). This consolidates Peter
+Hughes’s earlier npm modules around one inspectable scoring engine.
 
 ## Get started
 
@@ -46,19 +46,21 @@ input text.
 | `affect`    | affectimo          | AFFECT (valence, 1–9, 5 neutral) and INTENSITY (arousal, 1–9, 1 neutral) per post                           | binary, mean          |
 | `bigFive`   | bigfive            | O, C, E, A, N lexical association sums, **not calibrated trait predictions**                                | binary, pool          |
 | `darkTriad` | darktriad          | darktriad, machiavellianism, narcissism, psychopathy on a log scale; **uncalibrated, near-constant**        | frequency, pool       |
-| `optimism`  | optimismo          | Affect weights of future-indicating terms, relative to zero; **experimental composition**                   | binary, mean          |
+| `optimism`  | optimismo          | OPTIMISM: mean valence (1–9) of the messages classified as future-oriented                                  | temporal, then affect |
 | `age`       | predictage         | AGE in years                                                                                                | frequency, pool       |
 | `gender`    | predictgender      | GENDER classifier margin: ≥ 0 the source’s female label, < 0 male; **not a probability or gender identity** | frequency, pool       |
 | `temporal`  | prospectimo        | Share of messages classified PAST, PRESENT or FUTURE; per-message one-vs-rest log-odds in `messageValues`   | binary, argmax        |
 | `perma`     | wellbeing_analysis | English positive/negative P, E, R, M, A message ratings (0–6), lexical component                            | binary, mean          |
 | `permaEs`   | wellbeing_analysis | Spanish positive/negative P, E, R, M, A message ratings (1–7)                                               | binary, mean          |
 
-Message-level models (`affect`, `temporal`, `perma`, `permaEs`, `optimism`) were
-trained on single posts. Given several messages, they score each one and average
-the predictions (`mean`) or report the share of messages in each class
-(`argmax`), as in the papers. User-level models (`age`, `gender`, `bigFive`,
-`darkTriad`) score a user’s messages as one pooled group (`pool`). Age and
-gender were trained on users with at least 1,000 words.
+Message-level models (`affect`, `temporal`, `perma`, `permaEs`) were trained on
+single posts. Given several messages, they score each one and average the
+predictions (`mean`) or report the share of messages in each class (`argmax`),
+as in the papers. User-level models (`age`, `gender`, `bigFive`, `darkTriad`)
+score a user’s messages as one pooled group (`pool`). `optimism` follows WWBP’s
+guidance: “filter messages to those future-oriented using the future orientation
+lexicon, then apply the affect lexicon”. Age and gender were trained on users
+with at least 1,000 words.
 
 `lex-helpers` and `weighted-lexica` become `createLexicon`, `score`, and
 `tokenize`. The [`wwbnlp/core`](docs/api.md) entry point loads the generic
@@ -151,8 +153,8 @@ These historical social-media lexica produce research scores. The implementation
 does not establish current accuracy, diagnose an individual, or reproduce
 papers’ headline performance. Domain, language, tokenization and missing
 covariates affect results. The demographic models reflect historical training
-labels; Big Five associations and the optimism composition are not validated
-standalone predictors.
+labels; Big Five associations and optimism are not validated standalone
+predictors.
 
 Research coefficients retain **CC BY-NC-SA 3.0**, including the noncommercial
 restriction. The package uses the same licence. Original MIT utility notices are

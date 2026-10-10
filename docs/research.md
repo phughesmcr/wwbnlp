@@ -16,7 +16,7 @@ cross-validation results.
 | Spanish PERMA        | Smith et al. (2016), [Does ‘well-being’ translate on Twitter?](https://aclanthology.org/D16-1217/)                                                                                                                            | WWBP `spanish_perma/spanish_perma_v1.csv`                                                                                            |
 | Big Five             | Schwartz et al. (2013), [Personality, Gender, and Age in the Language of Social Media: The Open-Vocabulary Approach](https://doi.org/10.1371/journal.pone.0073791)                                                            | Historical `phughesmcr/bigfive/data/lexicon.json`, a copy of WWBP’s `{O,C,E,A,N}.top100.1to3grams.gender_age_controlled.rmatrix.csv` |
 | Dark Triad           | Preoţiuc-Pietro, Carpenter, Giorgi and Ungar (2016), [Studying the Dark Triad of Personality through Twitter Behavior](https://doi.org/10.1145/2983323.2983822)                                                               | Historical `phughesmcr/darktriad/data/lexicon.json`; intercepts from its `index.js`                                                  |
-| Optimism             | Experimental combination from the historical optimismo package, using affect and future-term vocabularies                                                                                                                     | Historical future-term allowlist, restricted to positive temporal FUTURE weights, with canonical affect weights                      |
+| Optimism             | [WWBP lexica guidance](https://www.wwbp.org/lexica): “Combining the affect lexicon with the future orientation lexicon produces an optimism lexicon (positive future-oriented thinking)”                                      | WWBP temporal orientation and affect lexica (no separate coefficients)                                                               |
 
 Park, G., Schwartz, H. A., Sap, M., Kern, M. L., Weingarten, E., Eichstaedt, J.
 C., Berger, J., Stillwell, D. J., Kosinski, M., Ungar, L. H., & Seligman, M. E.
@@ -33,13 +33,13 @@ package citations incorrectly identified the age/gender coefficients with the
 
 Each model is applied at the level at which it was trained:
 
-| Model                             | Unit                   | Encoding  | Group of messages (`aggregation`)                          |
-| --------------------------------- | ---------------------- | --------- | ---------------------------------------------------------- |
-| PERMA, Spanish PERMA              | Message                | binary    | `mean` of message predictions (Schwartz et al. 2016, §4.1) |
-| Affect/intensity                  | Message                | binary    | `mean` of message predictions                              |
-| Temporal orientation              | Message                | binary    | `argmax`: share of messages classified as each class       |
-| Optimism                          | Message                | binary    | `mean` (follows affect)                                    |
-| Age, gender, Big Five, Dark Triad | User (one DLATK group) | see below | `pool`: one DLATK group over all of a user’s messages      |
+| Model                             | Unit                   | Encoding  | Group of messages (`aggregation`)                              |
+| --------------------------------- | ---------------------- | --------- | -------------------------------------------------------------- |
+| PERMA, Spanish PERMA              | Message                | binary    | `mean` of message predictions (Schwartz et al. 2016, §4.1)     |
+| Affect/intensity                  | Message                | binary    | `mean` of message predictions                                  |
+| Temporal orientation              | Message                | binary    | `argmax`: share of messages classified as each class           |
+| Optimism                          | Message                | binary    | future-oriented messages (temporal argmax), then `mean` affect |
+| Age, gender, Big Five, Dark Triad | User (one DLATK group) | see below | `pool`: one DLATK group over all of a user’s messages          |
 
 - **PERMA**: “n-grams are encoded as booleans (i.e. whether they exist or not in
   the message)” (Schwartz et al. 2016, §4.1). Their cascaded user model uses
@@ -158,13 +158,19 @@ dots (`. . .`) are one HFT token, so age and gender are unigram-only, as in Sap
 et al. (2014). The Spanish CSV has intact accents and supersedes the corrupted
 legacy JSON.
 
-The optimism model takes the historical future-term list, which was the whole
-temporal FUTURE vocabulary, and keeps only the 129 terms with a positive FUTURE
-weight; the other 112 (`was`, `did`, `last night`, …) indicate the past or
-present. Each keeps its canonical affect coefficient. The score is a partial
-affect sum over future-indicating terms, so no intercept is added: it is
-relative, centred on zero, and not on the 1–9 valence scale. This composition
-was not independently trained or validated as an optimism model.
+Optimism follows WWBP’s guidance for combining two of its lexica: “Simply filter
+messages to those future-oriented using the future orientation lexicon, then
+apply the affect lexicon.” Each message is classified with the temporal
+orientation lexicon, as in Schwartz et al. (2015): it is future-oriented when
+FUTURE is its highest one-vs-rest score, intercepts included. The affect lexicon
+then scores those messages (binary, intercept included), and OPTIMISM is their
+mean valence on the 1–9 scale. Messages that are not future-oriented have `null`
+in `messageValues`; with none, the result is `no-matches`. Options apply to the
+affect step. WWBP do not report validating this combination, and it has no
+separate coefficients. The historical optimismo package instead summed affect
+weights over a fixed term list, the whole temporal FUTURE vocabulary including
+past-indicating terms such as `was` and `last night`; that list is no longer
+used.
 
 ## Unresolved provenance
 
