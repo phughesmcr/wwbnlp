@@ -10,7 +10,10 @@ Attribution-NonCommercial-ShareAlike 3.0 Unported. That licence contains a
 **noncommercial restriction**; this is not an MIT-licensed data package.
 
 - WWBP affect/intensity, age/gender, temporal orientation, English PERMA and
-  Spanish PERMA notices are retained in `licenses/`.
+  Spanish PERMA notices are retained in `licenses/`. Spanish PERMA is WWBP’s
+  lexicon as distributed in DLATK’s `dlatk_lexica.sql`; DLATK’s code is GPLv3,
+  but its documentation notes that its lexica keep their own, more restrictive
+  licences.
 - Historical Big Five and Dark Triad data were distributed by Peter Hughes under
   CC BY-NC-SA 3.0 with the research attributions documented in
   `docs/research.md`.

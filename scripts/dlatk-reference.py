@@ -10,7 +10,7 @@ weighted lexicon adds intercept + sum(weight * group_norm). Binary uses presence
 Groups follow each paper: user-level models pool a user's messages into one DLATK
 group. Message-level models score each nonempty message; a message without matches
 predicts its intercepts. A user's PERMA or affect score is the mean of their message
-predictions (Schwartz et al. 2016, section 4.1); temporal orientation is the proportion
+predictions (Schwartz et al. 2016, section 4.3); temporal orientation is the proportion
 of their messages classified as each class (Schwartz et al. 2015; Park et al. 2016).
 Input without any match in any category is unknown (None).
 
@@ -30,7 +30,7 @@ import urllib.request
 
 root = Path(__file__).resolve().parents[1]
 manifest = json.loads((root / 'data/provenance.json').read_text())
-entry = next(e for e in manifest['sources'] if e['path'] == 'dlatk/lib/happierfuntokenizing.py')
+entry = next(e for e in manifest['sources'] if e.get('path') == 'dlatk/lib/happierfuntokenizing.py')
 url = f"https://raw.githubusercontent.com/{entry['repository']}/{entry['commit']}/{entry['path']}"
 with urllib.request.urlopen(url, timeout=30) as response:
     source = response.read()

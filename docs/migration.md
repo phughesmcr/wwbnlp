@@ -56,23 +56,26 @@ output.
 - No data or no matching evidence yields explicit status and null category
   values. Intercepts alone cannot turn unknown input into a prediction. Once any
   category matches, every category is scored, intercept included.
-- Every model except age, gender and Dark Triad uses binary (presence) encoding,
-  as the papers did for message-level models. Request an encoding explicitly for
-  comparisons.
+- Every model except age, gender and Dark Triad uses binary (presence) encoding:
+  the PERMA and temporal papers state it, it is inferred for affect, and Big
+  Five keeps the historical package’s binary sums (Schwartz et al. 2013 used
+  relative frequencies). Request an encoding explicitly for comparisons.
 - Canonical WWBP CSV weights and intercepts replace rounded or damaged legacy
-  copies where available. Spanish accents are restored, and `permaEs` selects
-  Spanish directly. The old wellbeing module mistakenly inspected `output`
-  rather than `lang` when selecting Spanish.
-- `tokenize` is a port of the studies’ DLATK cleaning and Happier Fun Tokenizer,
-  so token streams differ from the old packages: for example `I’m` becomes `i`,
+  copies where available. Spanish PERMA uses DLATK’s `dd_sperma_v2`, a later
+  version with different terms, weights and intercepts, so its scores change;
+  accents are restored, and `permaEs` selects Spanish directly. The old
+  wellbeing module mistakenly inspected `output` rather than `lang` when
+  selecting Spanish.
+- `tokenize` is a port of DLATK’s cleaning and the Happier Fun Tokenizer, so
+  token streams differ from the old packages: for example `I’m` becomes `i`,
   `’`, `m`, and HTML entities are decoded.
 - Input may be one message (text or tokens) or a user’s messages as an array of
   token arrays, e.g. `posts.map(tokenize)`. Ngrams never span messages. Each
   model combines messages as its paper did: age, gender, Big Five and Dark Triad
-  pool them; affect and PERMA average per-message predictions; temporal
-  orientation reports the share of messages in each class; optimism averages the
-  valence of future-oriented messages. `messageValues` returns the per-message
-  scores.
+  pool them; PERMA averages per-message predictions, and so does affect (its
+  paper scored single posts only); temporal orientation reports the share of
+  messages in each class; optimism averages the valence of future-oriented
+  messages. `messageValues` returns the per-message scores.
 - Frequency divides each ngram’s count by the number of ngrams of the same size
   (DLATK `group_norm`), not by the token count for every size. Bigram and
   trigram contributions therefore change.
@@ -85,12 +88,15 @@ output.
 - English PERMA’s structural feature weights are retained and missing inputs are
   reported. Lexical-only results should not be described as the complete
   original trained model.
-- Big Five weights are WWBP’s age- and gender-controlled top-100 correlations,
-  with N negated so that higher means more neurotic, as in Schwartz et al.
-  (2013). Scores have no calibrated personality scale.
-- Dark Triad scores are natural logs of the 1–5 questionnaire scale. The weights
-  are expanded word-cluster coefficients that barely move scores from the
-  intercepts; treat them as uncalibrated.
+- Big Five weights are WWBP’s age- and gender-controlled correlations from its
+  top-100 1–3gram files, with N negated so that higher means more neurotic, as
+  in Schwartz et al. (2013). Scores have no calibrated personality scale.
+- Dark Triad scores are natural logs of the 1–5 questionnaire scale, as in the
+  paper. The historical weights were coefficients of standardized word-cluster
+  features, so applied directly every user scored within ±0.002 of the
+  intercepts. They are now rescaled with the cluster means and deviations of the
+  authors’ released dataset, and scores vary. They remain unvalidated, and texts
+  under 500 tokens produce a warning.
 - Optimism follows WWBP’s guidance: messages classified as future-oriented by
   the temporal orientation lexicon are scored with the affect lexicon, and
   OPTIMISM is their mean valence (1–9). The old fixed term list is gone. It is

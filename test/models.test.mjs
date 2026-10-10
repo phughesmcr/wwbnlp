@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { test } from "node:test";
-import { analyse, models, tokenize } from "../dist/src/index.js";
+import { analyse, createLexicon, models, tokenize } from "../dist/src/index.js";
 const fixture = JSON.parse(
   readFileSync(new URL("./dlatk-fixture.json", import.meta.url)),
 );
@@ -32,11 +32,16 @@ test("all nine models reproduce the reference scores per message and per group",
   }
 });
 test("canonical Spanish accents, model intercepts, and structural features are retained", () => {
-  assert.ok(Object.hasOwn(models.permaEs.categories.POS_P, "día de"));
+  assert.ok(
+    Object.hasOwn(models.permaEs.categories.POS_P, "muchísimas gracias"),
+  );
+  // DLATK's dd_sperma_v2: MySQL escapes are decoded and its intercepts retained.
+  assert.ok(Object.hasOwn(models.permaEs.categories.NEG_E, '" qué'));
+  assert.equal(models.permaEs.intercepts.POS_P, 3.37892421488);
   assert.equal(models.age.intercepts.AGE, 23.2188604687);
   assert.equal(models.affect.intercepts.AFFECT, 5.03710472069);
   assert.ok(
-    analyse("día de familia trabajo amor :)", "permaEs").info
+    analyse("muchísimas gracias mi niña :)", "permaEs").info
       .uniqueMatchedTerms > 0,
   );
   assert.ok(analyse("happy", "perma").warnings.length > 0);
@@ -87,6 +92,38 @@ test("message-level research models follow their papers", () => {
     () => analyse("x", "optimism", { aggregation: "pool" }),
     RangeError,
   );
+});
+test("Dark Triad warns below the authors' 500-token minimum", () => {
+  assert.equal(models.darkTriad.minTokens, 500);
+  assert.match(analyse("hot", "darkTriad").warnings[0], /at least 500 tokens/);
+  const user = "Going to the gym then dinner with friends tonight . ".repeat(
+    50,
+  );
+  assert.deepEqual(analyse(user, "darkTriad").warnings, []);
+  assert.deepEqual(analyse("", "darkTriad").warnings, []);
+  assert.throws(
+    () => createLexicon({ id: "x", categories: { A: {} }, minTokens: 0 }),
+    RangeError,
+  );
+});
+test("documented differences from DLATK cannot change bundled scores", () => {
+  // DLATK reads a trailing `*` as a prefix wildcard; the trained `f *` and `*`
+  // features are literal HFT ngrams, so `f you` must not match `f *`.
+  const terms = (text) =>
+    analyse(text, "affect").matches.AFFECT.map((m) => m.term).sort();
+  assert.deepEqual(terms("f you"), ["f", "you"]);
+  assert.deepEqual(terms("f * you"), ["*", "f", "f *", "you"]);
+  // DLATK's VARCHAR columns truncate 1-3grams to 36, 70 and 102 characters.
+  // No bundled term reaches those lengths, so truncation cannot match one.
+  const limits = [36, 70, 102];
+  for (const [id, model] of Object.entries(models)) {
+    for (const vocabulary of Object.values(model.categories)) {
+      for (const term of Object.keys(vocabulary)) {
+        const limit = limits[tokenize(term).length - 1];
+        assert.ok(term.length < limit, `${id}: ${term}`);
+      }
+    }
+  }
 });
 test("npm entry point can be used from both ESM and supported CommonJS", () => {
   const require = createRequire(import.meta.url);

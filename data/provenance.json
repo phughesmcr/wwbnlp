@@ -32,10 +32,10 @@
       "sha256": "6d954bbcf19d3690060b593b126930b0c580c0b5d45ef1ea95c0c544dece7079"
     },
     {
-      "repository": "wwbp/lexica",
-      "commit": "abaff9a1ae90757cfe77770fafbfcd16c92cd992",
-      "path": "spanish_perma/spanish_perma_v1.csv",
-      "sha256": "f57f3045fa641e25edca4ba2daee21c2ca140c7428110bde870ab737a9a19bae"
+      "repository": "dlatk/dlatk",
+      "commit": "a24a0ddf4039e913b024a0192de0dbeab812b014",
+      "path": "dlatk/data/dlatk_lexica.sql",
+      "sha256": "7b7f54653a5f729b2076def6d6b07390a5838fb704eb432fdcfd775ad2608bcd"
     },
     {
       "repository": "phughesmcr/bigfive",
@@ -60,13 +60,24 @@
       "commit": "a24a0ddf4039e913b024a0192de0dbeab812b014",
       "path": "dlatk/lib/happierfuntokenizing.py",
       "sha256": "2365761a7a173b85fdd2e00b5f29dbf282e6c0170d9397b59fa3ac865d268437"
+    },
+    {
+      "file": "darktriad.tar.gz",
+      "description": "Released dataset of Preoţiuc-Pietro et al. (2016): 491 users' unigram and word2vec-cluster features. Used offline by scripts/derive-darktriad-scaling.py; not fetched.",
+      "documentation": "https://web.archive.org/web/20190921093032/https://www.sas.upenn.edu/~danielpr/READMEdarktriad.txt",
+      "sha256": "3a9dd4933626517236b946be0672f019181fc31b5f520d597341b9362b92fb9e"
+    },
+    {
+      "url": "https://web.archive.org/web/20190921091639id_/https://www.sas.upenn.edu/~danielpr/READMEdtmodel.txt",
+      "description": "The authors' instructions for applying the released Dark Triad word models.",
+      "sha256": "6098f71837166df219cdda3e9d7abcca13b96dba0365b2b9e46d08544af3cc17"
     }
   ],
   "transformations": [
     "CSV category labels mapped to historical public names; intercept and named structural features separated from lexical terms.",
-    "Spanish PERMA restored from original UTF-8 WWBP CSV rather than corrupted legacy JSON.",
+    "Spanish PERMA is DLATK's dd_sperma_v2 table, parsed (not executed) from its MySQL dump; it supersedes WWBP's earlier spanish_perma_v1.csv and the corrupted legacy JSON.",
     "Big Five weights are the historical package's copy of WWBP's age- and gender-controlled top-100 1to3gram correlations (Schwartz et al. 2013); N weights are negated because WWBP's 'neu' column is oriented towards emotional stability.",
-    "Dark Triad weights are the historical package's word-level expansion of word2vec cluster coefficients; intercepts are parsed (not executed) from its index.js.",
+    "Dark Triad weights are the historical package's word-level expansion of word2vec cluster coefficients; intercepts are parsed (not executed) from its index.js. The coefficients are for standardized cluster fractions, so each is divided by its cluster's population SD and weight × mean / SD is subtracted from the intercept, using statistics of the authors' released dataset (data/darktriad-scaling.json; 102 of 104 clusters, the other two keep their weights). Groups under 500 tokens produce a warning, following the authors' recommendation.",
     "Spreadsheet artefacts that the Happier Fun Tokenizer cannot produce are removed: PERMA #NAME?, #REF! and Err:508; Big Five '93.00%' and '0.93%'.",
     "PERMA 'TRUE' (spreadsheet boolean conversion) is restored to 'true'.",
     "Big Five double quotes lost in conversion are restored: '' to '\"', ' -' to '\" -', ': ' to ': \"'; 'the lord,' becomes the HFT trigram 'the lord ,'.",

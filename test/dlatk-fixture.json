@@ -1,5 +1,5 @@
 {
-  "description": "Regenerate test/dlatk-fixture.json from the original Happier Fun Tokenizer and DLATK's\nngram and weighted-lexicon arithmetic. Development only: unlike import-data.py, this\nexecutes the pinned, checksum-verified upstream tokenizer (see data/provenance.json).\n\nDLATK reference (featureExtractor.addNGramTable and addLexiconFeat): each message is\ncleaned (newlines -> <NEWLINE>, shrinkSpace), HFT-tokenized and lowercased; n-grams\nnever span messages; group_norm = count / (all n-grams of that size in the group); a\nweighted lexicon adds intercept + sum(weight * group_norm). Binary uses presence.\n\nGroups follow each paper: user-level models pool a user's messages into one DLATK\ngroup. Message-level models score each nonempty message; a message without matches\npredicts its intercepts. A user's PERMA or affect score is the mean of their message\npredictions (Schwartz et al. 2016, section 4.1); temporal orientation is the proportion\nof their messages classified as each class (Schwartz et al. 2015; Park et al. 2016).\nInput without any match in any category is unknown (None).\n\nOptimism follows WWBP's lexica guidance: \"filter messages to those future-oriented using\nthe future orientation lexicon, then apply the affect lexicon\". A message is\nfuture-oriented when FUTURE is its highest temporal score; OPTIMISM is the mean\nvalence of those messages.",
+  "description": "Regenerate test/dlatk-fixture.json from the original Happier Fun Tokenizer and DLATK's\nngram and weighted-lexicon arithmetic. Development only: unlike import-data.py, this\nexecutes the pinned, checksum-verified upstream tokenizer (see data/provenance.json).\n\nDLATK reference (featureExtractor.addNGramTable and addLexiconFeat): each message is\ncleaned (newlines -> <NEWLINE>, shrinkSpace), HFT-tokenized and lowercased; n-grams\nnever span messages; group_norm = count / (all n-grams of that size in the group); a\nweighted lexicon adds intercept + sum(weight * group_norm). Binary uses presence.\n\nGroups follow each paper: user-level models pool a user's messages into one DLATK\ngroup. Message-level models score each nonempty message; a message without matches\npredicts its intercepts. A user's PERMA or affect score is the mean of their message\npredictions (Schwartz et al. 2016, section 4.3); temporal orientation is the proportion\nof their messages classified as each class (Schwartz et al. 2015; Park et al. 2016).\nInput without any match in any category is unknown (None).\n\nOptimism follows WWBP's lexica guidance: \"filter messages to those future-oriented using\nthe future orientation lexicon, then apply the affect lexicon\". A message is\nfuture-oriented when FUTURE is its highest temporal score; OPTIMISM is the mean\nvalence of those messages.",
   "tokenizer": [
     [
       "I love spending time with my family :)",
@@ -6837,16 +6837,16 @@
           "POS_E": 1.6196772208999999
         },
         "permaEs": {
-          "NEG_P": 2.394802452707,
-          "POS_P": 3.302476758969,
-          "POS_A": 3.41451780418,
-          "NEG_A": 2.48213117925,
-          "NEG_E": 1.6243976912379,
-          "POS_E": 2.0551792828,
-          "POS_M": 1.73829890153,
-          "NEG_M": 1.52236693512962,
-          "NEG_R": 1.78278898435,
-          "POS_R": 2.16122391715
+          "POS_P": 3.918473745519,
+          "NEG_P": 2.66853295979,
+          "POS_E": 2.47712478304,
+          "NEG_E": 1.81916234153,
+          "POS_R": 2.39265245751,
+          "NEG_R": 1.87782426515,
+          "POS_M": 2.01617708258,
+          "NEG_M": 1.49583472695,
+          "POS_A": 3.54736317661,
+          "NEG_A": 2.66370224122
         },
         "bigFive": {
           "N": 0,
@@ -6856,10 +6856,10 @@
           "O": 0
         },
         "darkTriad": {
-          "darktriad": 0.632024388686,
-          "machiavellianism": 0.5971414072423075,
-          "narcissism": 0.7142192361222863,
-          "psychopathy": 0.48892463341
+          "darktriad": 0.5669440036696455,
+          "machiavellianism": 0.7919476401682172,
+          "narcissism": 0.48155976525336275,
+          "psychopathy": 0.3472017119403432
         },
         "optimism": {
           "OPTIMISM": null
@@ -6899,16 +6899,16 @@
           "POS_E": 1.0194742979
         },
         "permaEs": {
-          "NEG_P": 2.2021786573227002,
-          "POS_P": 3.9388294441163705,
-          "POS_A": 3.77001245215848,
-          "NEG_A": 1.9996016192184,
-          "NEG_E": 1.4482906519368,
-          "POS_E": 2.689202344749,
-          "POS_M": 2.0018893996580003,
-          "NEG_M": 1.4319533570666,
-          "NEG_R": 1.576492313932,
-          "POS_R": 2.5217207956271004
+          "POS_P": 4.166672467407,
+          "NEG_P": 2.5130551024513,
+          "POS_E": 3.063444036563,
+          "NEG_E": 1.74784828430823,
+          "POS_R": 2.8528445565243,
+          "NEG_R": 1.88362600878327,
+          "POS_M": 2.3620344955312,
+          "NEG_M": 1.7025593690647,
+          "POS_A": 3.9187815785613,
+          "NEG_A": 2.2562541396394002
         },
         "bigFive": {
           "N": 0.0009209999999999982,
@@ -6918,10 +6918,10 @@
           "O": -0.08655499999999999
         },
         "darkTriad": {
-          "darktriad": 0.632024388686,
-          "machiavellianism": 0.596743883684,
-          "narcissism": 0.7158252087091629,
-          "psychopathy": 0.48892463341
+          "darktriad": 0.5669440036696455,
+          "machiavellianism": 0.6100163264542067,
+          "narcissism": 0.87595838546914,
+          "psychopathy": 0.3472017119403432
         },
         "optimism": {
           "OPTIMISM": 4.5509398306503
@@ -6961,16 +6961,16 @@
           "POS_E": 1.5201989509
         },
         "permaEs": {
-          "NEG_P": 2.0707136363896,
-          "POS_P": 4.4502127309508,
-          "POS_A": 3.71265752452488,
-          "NEG_A": 1.7998236349295,
-          "NEG_E": 1.3046843460895,
-          "POS_E": 2.87786133626264,
-          "POS_M": 2.0018893996580003,
-          "NEG_M": 1.2606620243558,
-          "NEG_R": 1.4513266466984,
-          "POS_R": 2.5081376405806
+          "POS_P": 4.766896682385,
+          "NEG_P": 2.5130551024513,
+          "POS_E": 3.189499604336,
+          "NEG_E": 1.74784828430823,
+          "POS_R": 2.8528445565243,
+          "NEG_R": 1.74386308073527,
+          "POS_M": 2.3620344955312,
+          "NEG_M": 1.4418502075833002,
+          "POS_A": 3.9187815785613,
+          "NEG_A": 2.2562541396394002
         },
         "bigFive": {
           "N": -0.134542,
@@ -6980,10 +6980,10 @@
           "O": -0.08655499999999999
         },
         "darkTriad": {
-          "darktriad": 0.6327460485437928,
-          "machiavellianism": 0.596743883684,
-          "narcissism": 0.7155961618497644,
-          "psychopathy": 0.4895041270930843
+          "darktriad": 0.9884701403520183,
+          "machiavellianism": 0.6100163264542067,
+          "narcissism": 1.1244965818315147,
+          "psychopathy": 0.6856876770727882
         },
         "optimism": {
           "OPTIMISM": 7.3945038095288
@@ -7023,16 +7023,16 @@
           "POS_E": 0.5698315428999999
         },
         "permaEs": {
-          "NEG_P": 2.608236332812,
-          "POS_P": 2.93766061857887,
-          "POS_A": 3.4632058488087,
-          "NEG_A": 2.5650608349205,
-          "NEG_E": 1.6880532019537,
-          "POS_E": 2.0847107292291,
-          "POS_M": 1.9096440673500001,
-          "NEG_M": 1.52622797587921,
-          "NEG_R": 1.8380627453613,
-          "POS_R": 2.0128114450365002
+          "POS_P": 3.6007748238410002,
+          "NEG_P": 3.065052967376,
+          "POS_E": 2.47712478304,
+          "NEG_E": 2.133935311956,
+          "POS_R": 2.589182440418,
+          "NEG_R": 2.1772666470449997,
+          "POS_M": 2.300316577925,
+          "NEG_M": 1.49583472695,
+          "POS_A": 3.54736317661,
+          "NEG_A": 3.0437539057290004
         },
         "bigFive": {
           "N": 0,
@@ -7042,10 +7042,10 @@
           "O": 0.08347
         },
         "darkTriad": {
-          "darktriad": 0.632024388686,
-          "machiavellianism": 0.596743883684,
-          "narcissism": 0.7159806890650873,
-          "psychopathy": 0.48892463341
+          "darktriad": 0.5669440036696455,
+          "machiavellianism": 0.6100163264542067,
+          "narcissism": 1.3524617603207918,
+          "psychopathy": 0.3472017119403432
         },
         "optimism": {
           "OPTIMISM": null
@@ -7085,16 +7085,16 @@
           "POS_E": 0.1087001629
         },
         "permaEs": {
-          "NEG_P": 2.5046829697,
-          "POS_P": 2.67517387136,
-          "POS_A": 3.41451780418,
-          "NEG_A": 2.48213117925,
-          "NEG_E": 1.562366211993,
-          "POS_E": 2.0551792828,
-          "POS_M": 1.73829890153,
-          "NEG_M": 1.5289028404,
-          "NEG_R": 1.78278898435,
-          "POS_R": 1.97738975711
+          "POS_P": null,
+          "NEG_P": null,
+          "POS_E": null,
+          "NEG_E": null,
+          "POS_R": null,
+          "NEG_R": null,
+          "POS_M": null,
+          "NEG_M": null,
+          "POS_A": null,
+          "NEG_A": null
         },
         "bigFive": {
           "N": null,
@@ -7147,16 +7147,16 @@
           "POS_E": 0.5970919508
         },
         "permaEs": {
-          "NEG_P": 2.364664775524,
-          "POS_P": 3.655202578193,
-          "POS_A": 3.761089299893,
-          "NEG_A": 1.940653020073,
-          "NEG_E": 1.427720922755,
-          "POS_E": 2.596543357427,
-          "POS_M": 2.0018893996580003,
-          "NEG_M": 1.343196767962,
-          "NEG_R": 1.581449398218,
-          "POS_R": 2.490212876564
+          "POS_P": 3.852118769838,
+          "NEG_P": 2.7241488936503,
+          "POS_E": 2.9778205830389997,
+          "NEG_E": 1.7531156871968,
+          "POS_R": 2.764783379107,
+          "NEG_R": 1.87618022339427,
+          "POS_M": 2.303407476117,
+          "NEG_M": 1.455650275096,
+          "POS_A": 3.8811886181709996,
+          "NEG_A": 2.319159751251
         },
         "bigFive": {
           "N": -0.033265,
@@ -7166,10 +7166,10 @@
           "O": 0.111013
         },
         "darkTriad": {
-          "darktriad": 0.632024388686,
-          "machiavellianism": 0.5960743880465862,
-          "narcissism": 0.7170553382493847,
-          "psychopathy": 0.48892463341
+          "darktriad": 0.5669440036696455,
+          "machiavellianism": 0.31346603477421037,
+          "narcissism": 1.85330965504976,
+          "psychopathy": 0.3472017119403432
         },
         "optimism": {
           "OPTIMISM": null
@@ -7209,16 +7209,16 @@
           "POS_E": 0.8478602506
         },
         "permaEs": {
-          "NEG_P": 2.5046829697,
-          "POS_P": 2.966939697371,
-          "POS_A": 3.41451780418,
-          "NEG_A": 2.48213117925,
-          "NEG_E": 1.67362962208,
-          "POS_E": 2.0551792828,
-          "POS_M": 1.73829890153,
-          "NEG_M": 1.5289028404,
-          "NEG_R": 1.78278898435,
-          "POS_R": 1.97738975711
+          "POS_P": 4.180355329655,
+          "NEG_P": 2.66853295979,
+          "POS_E": 2.47712478304,
+          "NEG_E": 1.81916234153,
+          "POS_R": 2.39265245751,
+          "NEG_R": 1.87782426515,
+          "POS_M": 2.01617708258,
+          "NEG_M": 1.49583472695,
+          "POS_A": 3.54736317661,
+          "NEG_A": 2.66370224122
         },
         "bigFive": {
           "N": 0,
@@ -7228,10 +7228,10 @@
           "O": 0
         },
         "darkTriad": {
-          "darktriad": 0.63058250372543,
-          "machiavellianism": 0.5957945456614666,
-          "narcissism": 0.7114174658950251,
-          "psychopathy": 0.4868459817759
+          "darktriad": -0.3054344809286146,
+          "machiavellianism": -0.0034122103904415946,
+          "narcissism": -1.0922696049834082,
+          "psychopathy": -0.9104374285962225
         },
         "optimism": {
           "OPTIMISM": null
@@ -7271,16 +7271,16 @@
           "POS_E": 0.031642661
         },
         "permaEs": {
-          "NEG_P": 2.6557567738150003,
-          "POS_P": 2.67517387136,
-          "POS_A": 3.41451780418,
-          "NEG_A": 2.609805898146,
-          "NEG_E": 1.804327008087,
-          "POS_E": 2.0551792828,
-          "POS_M": 1.73829890153,
-          "NEG_M": 1.8495742553030001,
-          "NEG_R": 1.90054435917,
-          "POS_R": 2.0245119128323
+          "POS_P": 3.37892421488,
+          "NEG_P": 2.944947835447,
+          "POS_E": 2.47712478304,
+          "NEG_E": 1.998395482362,
+          "POS_R": 2.39265245751,
+          "NEG_R": 2.0710928867389997,
+          "POS_M": 2.01617708258,
+          "NEG_M": 1.840387003413,
+          "POS_A": 3.54736317661,
+          "NEG_A": 2.66370224122
         },
         "bigFive": {
           "N": 0,
@@ -7290,10 +7290,10 @@
           "O": -0.057333
         },
         "darkTriad": {
-          "darktriad": 0.632024388686,
-          "machiavellianism": 0.596743883684,
-          "narcissism": 0.7181713933711,
-          "psychopathy": 0.48892463341
+          "darktriad": 0.5669440036696455,
+          "machiavellianism": 0.6100163264542067,
+          "narcissism": 1.739359136167723,
+          "psychopathy": 0.3472017119403432
         },
         "optimism": {
           "OPTIMISM": 4.7471015209836
@@ -7333,16 +7333,16 @@
           "POS_E": 1.4549973569999999
         },
         "permaEs": {
-          "NEG_P": 1.9946678691216502,
-          "POS_P": 4.45111497766,
-          "POS_A": 3.78517184823548,
-          "NEG_A": 1.8822429156154001,
-          "NEG_E": 1.34798892792049,
-          "POS_E": 2.8348805598326,
-          "POS_M": 2.0404019280782,
-          "NEG_M": 1.3294721808932901,
-          "NEG_R": 1.5005608859125,
-          "POS_R": 2.7203236338203003
+          "POS_P": 4.7986325076762,
+          "NEG_P": 2.7408531164912997,
+          "POS_E": 3.189499604336,
+          "NEG_E": 1.97998246131923,
+          "POS_R": 2.9931693561753,
+          "NEG_R": 1.9827324181092698,
+          "POS_M": 2.3620344955312,
+          "NEG_M": 1.5315443828517001,
+          "POS_A": 3.9187815785613,
+          "NEG_A": 2.2562541396394002
         },
         "bigFive": {
           "N": -0.11274200000000001,
@@ -7352,10 +7352,10 @@
           "O": -0.08655499999999999
         },
         "darkTriad": {
-          "darktriad": 0.6309429749655725,
-          "machiavellianism": 0.5958331183879463,
-          "narcissism": 0.7128213679269438,
-          "psychopathy": 0.487365644684425
+          "darktriad": -0.08733985977904957,
+          "machiavellianism": 0.05897926696371514,
+          "narcissism": -0.6182959168498909,
+          "psychopathy": -0.5960276434620811
         },
         "optimism": {
           "OPTIMISM": null
@@ -7395,16 +7395,16 @@
           "POS_E": 0.1739862096
         },
         "permaEs": {
-          "NEG_P": 2.7027408578897,
-          "POS_P": 2.67304956077824,
-          "POS_A": 3.4632058488087,
-          "NEG_A": 2.6824195385235,
-          "NEG_E": 1.7325660295947,
-          "POS_E": 1.9768214495601002,
-          "POS_M": 1.9096440673500001,
-          "NEG_M": 1.61498456498381,
-          "NEG_R": 1.9456945018083,
-          "POS_R": 1.9980427668833
+          "POS_P": 3.6007748238410002,
+          "NEG_P": 3.065052967376,
+          "POS_E": 2.3510692152669996,
+          "NEG_E": 2.133935311956,
+          "POS_R": 2.589182440418,
+          "NEG_R": 2.3170295750929997,
+          "POS_M": 2.300316577925,
+          "NEG_M": 1.666849713163,
+          "POS_A": 3.54736317661,
+          "NEG_A": 3.0437539057290004
         },
         "bigFive": {
           "N": 0.24887700000000001,
@@ -7457,16 +7457,16 @@
           "POS_E": 0.1341915258
         },
         "permaEs": {
-          "NEG_P": null,
           "POS_P": null,
-          "POS_A": null,
-          "NEG_A": null,
-          "NEG_E": null,
+          "NEG_P": null,
           "POS_E": null,
+          "NEG_E": null,
+          "POS_R": null,
+          "NEG_R": null,
           "POS_M": null,
           "NEG_M": null,
-          "NEG_R": null,
-          "POS_R": null
+          "POS_A": null,
+          "NEG_A": null
         },
         "bigFive": {
           "N": 0.046193,
@@ -7476,10 +7476,10 @@
           "O": 0
         },
         "darkTriad": {
-          "darktriad": 0.632024388686,
-          "machiavellianism": 0.596743883684,
-          "narcissism": 0.715092141992213,
-          "psychopathy": 0.48892463341
+          "darktriad": 0.5669440036696455,
+          "machiavellianism": 0.6100163264542067,
+          "narcissism": 0.9148645160518756,
+          "psychopathy": 0.3472017119403432
         },
         "optimism": {
           "OPTIMISM": null
@@ -7519,16 +7519,16 @@
           "POS_E": -0.1451169912
         },
         "permaEs": {
-          "NEG_P": 2.2451986839341003,
-          "POS_P": 3.5448224103464003,
-          "POS_A": 3.4995175727716,
-          "NEG_A": 2.8417719953577,
-          "NEG_E": 1.78615332669644,
-          "POS_E": 1.9441805119907,
-          "POS_M": 1.6331145504661901,
-          "NEG_M": 1.4161292749105,
-          "NEG_R": 1.7000330782313,
-          "POS_R": 1.8554871806029
+          "POS_P": 3.3083120771436,
+          "NEG_P": 3.0254700543469997,
+          "POS_E": 2.2420176503129996,
+          "NEG_E": 2.322652689721,
+          "POS_R": 1.941975018968,
+          "NEG_R": 2.088342548036,
+          "POS_M": 1.7358104035312,
+          "NEG_M": 1.5915225213121,
+          "POS_A": 3.54736317661,
+          "NEG_A": 3.28709561586
         },
         "bigFive": {
           "N": 0.121249,
@@ -7538,10 +7538,10 @@
           "O": 0
         },
         "darkTriad": {
-          "darktriad": 0.632024388686,
-          "machiavellianism": 0.596743883684,
-          "narcissism": 0.7155415249312936,
-          "psychopathy": 0.48892463341
+          "darktriad": 0.5669440036696455,
+          "machiavellianism": 0.6100163264542067,
+          "narcissism": 0.8999074895099985,
+          "psychopathy": 0.3472017119403432
         },
         "optimism": {
           "OPTIMISM": null
@@ -7581,16 +7581,16 @@
           "POS_E": 0.043614152100000005
         },
         "permaEs": {
-          "NEG_P": 2.272780935598,
-          "POS_P": 2.67517387136,
-          "POS_A": 3.4553352711681,
-          "NEG_A": 2.216613870076,
-          "NEG_E": 1.46975386315,
-          "POS_E": 2.0551792828,
-          "POS_M": 1.8116292701557002,
-          "NEG_M": 1.416462965299,
-          "NEG_R": 1.582009715715,
-          "POS_R": 2.094371163256
+          "POS_P": 2.4903385595380003,
+          "NEG_P": 2.66853295979,
+          "POS_E": 2.47712478304,
+          "NEG_E": 1.81916234153,
+          "POS_R": 2.39265245751,
+          "NEG_R": 1.87782426515,
+          "POS_M": 2.01617708258,
+          "NEG_M": 1.49583472695,
+          "POS_A": 3.54736317661,
+          "NEG_A": 2.66370224122
         },
         "bigFive": {
           "N": 0.05336,
@@ -7600,10 +7600,10 @@
           "O": 0
         },
         "darkTriad": {
-          "darktriad": 0.6308483218283083,
-          "machiavellianism": 0.596743883684,
-          "narcissism": 0.7153411260553251,
-          "psychopathy": 0.48870522930973165
+          "darktriad": 0.3730977390381929,
+          "machiavellianism": 0.6100163264542067,
+          "narcissism": 1.917731600987628,
+          "psychopathy": 0.31103823619601484
         },
         "optimism": {
           "OPTIMISM": null
@@ -7643,16 +7643,16 @@
           "POS_E": -0.033600476899999995
         },
         "permaEs": {
-          "NEG_P": 2.715820333136,
-          "POS_P": 2.7956989831410004,
-          "POS_A": 3.41451780418,
-          "NEG_A": 2.8361004100593,
-          "NEG_E": 1.93575236907,
-          "POS_E": 2.0551792828,
-          "POS_M": 1.7472629551589902,
-          "NEG_M": 1.6231080437157,
-          "NEG_R": 1.950735945473,
-          "POS_R": 2.036146794611
+          "POS_P": 3.656352893401,
+          "NEG_P": 2.704742439436,
+          "POS_E": 2.775624469345,
+          "NEG_E": 1.902190950355,
+          "POS_R": 2.908590997177,
+          "NEG_R": 2.088342548036,
+          "POS_M": 2.243873039513,
+          "NEG_M": 1.6790866192590002,
+          "POS_A": 3.9347971367029997,
+          "NEG_A": 4.197394900702
         },
         "bigFive": {
           "N": null,
@@ -7662,10 +7662,10 @@
           "O": null
         },
         "darkTriad": {
-          "darktriad": 0.632024388686,
-          "machiavellianism": 0.596743883684,
-          "narcissism": 0.71712744920933,
-          "psychopathy": 0.48892463341
+          "darktriad": 0.5669440036696455,
+          "machiavellianism": 0.6100163264542067,
+          "narcissism": 2.110313420497793,
+          "psychopathy": 0.3472017119403432
         },
         "optimism": {
           "OPTIMISM": null
@@ -7705,16 +7705,16 @@
           "POS_E": 0.2026449632
         },
         "permaEs": {
-          "NEG_P": 0.7637877372284501,
-          "POS_P": 6.474658655854411,
-          "POS_A": 4.1531715608042,
-          "NEG_A": 1.1933382365065,
-          "NEG_E": 1.89197691984539,
-          "POS_E": 5.034255171198,
-          "POS_M": 3.2680764225033,
-          "NEG_M": 1.55919810339946,
-          "NEG_R": 1.11420855260496,
-          "POS_R": 5.66654891415578
+          "POS_P": 8.7492489551306,
+          "NEG_P": 2.5367084323503,
+          "POS_E": 5.1464688970833,
+          "NEG_E": 3.898302882827,
+          "POS_R": 6.6332431824904,
+          "NEG_R": 2.34242239751527,
+          "POS_M": 3.5816437348875,
+          "NEG_M": 1.8468982599826,
+          "POS_A": 5.946115904271,
+          "NEG_A": 3.7159062840190002
         },
         "bigFive": {
           "N": -0.033265,
@@ -7724,10 +7724,10 @@
           "O": -0.044009
         },
         "darkTriad": {
-          "darktriad": 0.632024388686,
-          "machiavellianism": 0.596743883684,
-          "narcissism": 0.7150272699777678,
-          "psychopathy": 0.48892463341
+          "darktriad": 0.5669440036696455,
+          "machiavellianism": 0.6100163264542067,
+          "narcissism": 0.6285722774534834,
+          "psychopathy": 0.3472017119403432
         },
         "optimism": {
           "OPTIMISM": null
@@ -7767,16 +7767,16 @@
           "POS_E": -0.0820778749
         },
         "permaEs": {
-          "NEG_P": 7.477508473818101,
-          "POS_P": 1.95638958317917,
-          "POS_A": 3.4805922364051,
-          "NEG_A": 6.2733867979048,
-          "NEG_E": 4.512845395338835,
-          "POS_E": 2.0651401087343,
-          "POS_M": 1.8116292701557002,
-          "NEG_M": 4.0002373063858,
-          "NEG_R": 5.4490065073825,
-          "POS_R": 1.8244806025166
+          "POS_P": 1.1460412313457002,
+          "NEG_P": 8.836640319051,
+          "POS_E": 2.006484407496,
+          "NEG_E": 4.927305089265,
+          "POS_R": 1.9441457059043001,
+          "NEG_R": 6.591713299204,
+          "POS_M": 2.01617708258,
+          "NEG_M": 4.377242218033,
+          "POS_A": 3.063442112281,
+          "NEG_A": 8.798874641147
         },
         "bigFive": {
           "N": 0,
@@ -7786,10 +7786,10 @@
           "O": -0.054473
         },
         "darkTriad": {
-          "darktriad": 0.632024388686,
-          "machiavellianism": 0.596743883684,
-          "narcissism": 0.7156466223125955,
-          "psychopathy": 0.48892463341
+          "darktriad": 0.5669440036696455,
+          "machiavellianism": 0.6100163264542067,
+          "narcissism": 1.0986235321455042,
+          "psychopathy": 0.3472017119403432
         },
         "optimism": {
           "OPTIMISM": null
@@ -7829,16 +7829,16 @@
           "POS_E": 0.0
         },
         "permaEs": {
-          "NEG_P": null,
           "POS_P": null,
-          "POS_A": null,
-          "NEG_A": null,
-          "NEG_E": null,
+          "NEG_P": null,
           "POS_E": null,
+          "NEG_E": null,
+          "POS_R": null,
+          "NEG_R": null,
           "POS_M": null,
           "NEG_M": null,
-          "NEG_R": null,
-          "POS_R": null
+          "POS_A": null,
+          "NEG_A": null
         },
         "bigFive": {
           "N": 0,
@@ -7894,16 +7894,16 @@
           "POS_E": 1.18229550315
         },
         "permaEs": {
-          "NEG_P": 2.318982769807825,
-          "POS_P": 3.65729488815376,
-          "POS_A": 3.590098407418015,
-          "NEG_A": 2.2116543170796,
-          "NEG_E": 1.516356472804475,
-          "POS_E": 2.426738423260185,
-          "POS_M": 1.9129304420490003,
-          "NEG_M": 1.4353025731078075,
-          "NEG_R": 1.662167672585425,
-          "POS_R": 2.3009734495985503
+          "POS_P": 4.113204429788,
+          "NEG_P": 2.68992403301715,
+          "POS_E": 2.80179830174475,
+          "NEG_E": 1.8621985555256149,
+          "POS_R": 2.67188100274415,
+          "NEG_R": 1.9206450004283848,
+          "POS_M": 2.26014066289185,
+          "NEG_M": 1.534019757637,
+          "POS_A": 3.73307237758565,
+          "NEG_A": 2.55499110655695
         },
         "bigFive": {
           "N": -0.072562,
@@ -7913,10 +7913,10 @@
           "O": -0.0030849999999999975
         },
         "darkTriad": {
-          "darktriad": 0.6322393511968318,
-          "machiavellianism": 0.5968115472683928,
-          "narcissism": 0.7155200139684943,
-          "psychopathy": 0.4890972485496421
+          "darktriad": 0.6925049805537565,
+          "machiavellianism": 0.6409833585757404,
+          "narcissism": 0.9943814261226549,
+          "psychopathy": 0.44802731857553957
         },
         "optimism": {
           "OPTIMISM": 5.97272182008955
@@ -7957,16 +7957,16 @@
           "POS_E": 0.06028354415
         },
         "permaEs": {
-          "NEG_P": 4.1206481055232755,
-          "POS_P": 4.2155241195167905,
-          "POS_A": 3.8168818986046498,
-          "NEG_A": 3.7333625172056504,
-          "NEG_E": 3.2024111575921124,
-          "POS_E": 3.54969763996615,
-          "POS_M": 2.5398528463295,
-          "NEG_M": 2.77971770489263,
-          "NEG_R": 3.28160752999373,
-          "POS_R": 3.7455147583361903
+          "POS_P": 4.94764509323815,
+          "NEG_P": 5.68667437570065,
+          "POS_E": 3.57647665228965,
+          "NEG_E": 4.412803986046001,
+          "POS_R": 4.2886944441973505,
+          "NEG_R": 4.467067848359635,
+          "POS_M": 2.79891040873375,
+          "NEG_M": 3.1120702390078003,
+          "POS_A": 4.5047790082759995,
+          "NEG_A": 6.257390462583
         },
         "bigFive": {
           "N": -0.033265,
@@ -7976,10 +7976,10 @@
           "O": -0.098482
         },
         "darkTriad": {
-          "darktriad": 0.632024388686,
-          "machiavellianism": 0.596743883684,
-          "narcissism": 0.7152621967254611,
-          "psychopathy": 0.48892463341
+          "darktriad": 0.5669440036696455,
+          "machiavellianism": 0.6100163264542067,
+          "narcissism": 0.8068675809573533,
+          "psychopathy": 0.3472017119403432
         },
         "optimism": {
           "OPTIMISM": null
@@ -8022,16 +8022,16 @@
           "POS_E": 0.6966768312666667
         },
         "permaEs": {
-          "NEG_P": 2.3945443129672,
-          "POS_P": 3.35434907362989,
-          "POS_A": 3.530127059171193,
-          "NEG_A": 2.2823385497,
-          "NEG_E": 1.5554557233744,
-          "POS_E": 2.33925044943058,
-          "POS_M": 1.8832774561793333,
-          "NEG_M": 1.4385976135450036,
-          "NEG_R": 1.6907261254699,
-          "POS_R": 2.1661129475757
+          "POS_P": 3.9155319070353336,
+          "NEG_P": 2.7488803432057662,
+          "POS_E": 2.714583056805333,
+          "NEG_E": 1.9003153125980765,
+          "POS_R": 2.611559818150767,
+          "NEG_R": 1.9329846643100899,
+          "POS_M": 2.226176052012067,
+          "NEG_M": 1.4778398871611003,
+          "POS_A": 3.6711693105937666,
+          "NEG_A": 2.654570095529467
         },
         "bigFive": {
           "N": -0.134542,
@@ -8041,10 +8041,10 @@
           "O": -0.0030849999999999975
         },
         "darkTriad": {
-          "darktriad": 0.6324129747632731,
-          "machiavellianism": 0.596743883684,
-          "narcissism": 0.71573135189891,
-          "psychopathy": 0.48923666847012226
+          "darktriad": 0.7939196157293847,
+          "machiavellianism": 0.6100163264542067,
+          "narcissism": 1.204883650381761,
+          "psychopathy": 0.5294633854731983
         },
         "optimism": {
           "OPTIMISM": 7.3945038095288
@@ -8087,16 +8087,16 @@
           "POS_E": 0.264129855675
         },
         "permaEs": {
-          "NEG_P": 2.3779606310880004,
-          "POS_P": 3.149654325978,
-          "POS_A": 3.50339146617462,
-          "NEG_A": 2.33215911334135,
-          "NEG_E": 1.593858689923425,
-          "POS_E": 2.2406573682045003,
-          "POS_M": 1.804196526062,
-          "NEG_M": 1.480842345972905,
-          "NEG_R": 1.70430687763375,
-          "POS_R": 2.163123226287575
+          "POS_P": 3.7107486606715003,
+          "NEG_P": 2.6296634954553246,
+          "POS_E": 2.655218488364,
+          "NEG_E": 1.8013338272245574,
+          "POS_R": 2.507700482263575,
+          "NEG_R": 1.8443339690463174,
+          "POS_M": 2.1026414358178,
+          "NEG_M": 1.504762140925425,
+          "POS_A": 3.640217777097825,
+          "NEG_A": 2.56184021582485
         },
         "bigFive": {
           "N": -0.090409,
@@ -8106,10 +8106,10 @@
           "O": -0.08655499999999999
         },
         "darkTriad": {
-          "darktriad": 0.632024388686,
-          "machiavellianism": 0.596743883684,
-          "narcissism": 0.7144508456546224,
-          "psychopathy": 0.4891662668679388
+          "darktriad": 0.5669440036696455,
+          "machiavellianism": 0.6100163264542067,
+          "narcissism": 0.20868534380991466,
+          "psychopathy": 0.4274284264156727
         },
         "optimism": {
           "OPTIMISM": 5.97849950261115

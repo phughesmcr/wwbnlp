@@ -20,6 +20,8 @@ export interface LexiconDefinition {
   readonly ngrams?: readonly number[];
   readonly encoding?: Encoding;
   readonly aggregation?: Aggregation;
+  /** Fewest tokens per group the model supports; smaller groups get a warning. */
+  readonly minTokens?: number;
 }
 export interface Lexicon extends LexiconDefinition {
   readonly intercepts: Readonly<Record<string, number>>;
@@ -158,6 +160,10 @@ export function createLexicon(definition: LexiconDefinition): Lexicon {
   checkNgrams(ngrams);
   checkEncoding(encoding);
   checkAggregation(aggregation);
+  if (
+    definition.minTokens !== undefined &&
+    (!Number.isSafeInteger(definition.minTokens) || definition.minTokens < 1)
+  ) throw new RangeError("minTokens must be a positive integer");
   return Object.freeze({
     id: definition.id,
     ...(definition.language === undefined
@@ -169,6 +175,9 @@ export function createLexicon(definition: LexiconDefinition): Lexicon {
     ngrams: Object.freeze([...new Set(ngrams)]),
     encoding,
     aggregation,
+    ...(definition.minTokens === undefined
+      ? {}
+      : { minTokens: definition.minTokens }),
   });
 }
 function toMessages(input: Input): readonly Tokens[] {
@@ -476,10 +485,18 @@ export function score(
       matchedFeatureCount,
       uniqueMatchedTerms: result.matched.size,
     },
-    warnings: encoding === "percent"
-      ? []
-      : [...knownFeatures].filter((f) => !own(features, f)).map((f) =>
-        `Structural feature ${f} was not supplied; its contribution is omitted.`
-      ),
+    warnings: [
+      ...(encoding === "percent"
+        ? []
+        : [...knownFeatures].filter((f) => !own(features, f)).map((f) =>
+          `Structural feature ${f} was not supplied; its contribution is omitted.`
+        )),
+      ...(lexicon.minTokens !== undefined && tokenCount &&
+          tokenCount < lexicon.minTokens
+        ? [
+          `${lexicon.id} supports groups of at least ${lexicon.minTokens} tokens; scores of ${tokenCount} tokens are unreliable.`,
+        ]
+        : []),
+    ],
   };
 }

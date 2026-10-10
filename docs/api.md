@@ -32,7 +32,9 @@ Definitions are validated, copied and frozen. Every category needs a
 term-to-finite-weight map. Intercepts default to zero. Optional structural
 feature weights use the same category map shape, keyed by feature names. Unknown
 intercept/feature categories are rejected. Custom definitions default to
-frequency encoding, `pool` aggregation and `[1, 2, 3]` ngrams.
+frequency encoding, `pool` aggregation and `[1, 2, 3]` ngrams. An optional
+positive integer `minTokens` adds a warning when the input has fewer tokens, as
+for `darkTriad` (500).
 
 `score` and `analyse` return `Analysis` with category maps and explicit status;
 see the README. Categories share evidence: if no category has a lexical match or
